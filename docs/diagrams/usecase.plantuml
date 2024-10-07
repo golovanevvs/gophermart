@@ -1,0 +1,52 @@
+@startuml usecase
+
+actor "Пользователь" as Consumer #pink;line:red;line.bold
+
+package "Интернет-магазин << Гофермарт >>" as Store {
+    usecase "Интернет-магазин\n<< Гофермарт >>" as StoreIn
+}
+
+package "Система расчёта баллов лояльности << Гофермарт >>" as CalcPointsSystem {
+    usecase "Система расчёта\nбаллов лояльности << Гофермарт >>" as CalcPointsSystemIn
+}
+
+package "Система лояльности << Гофермарт >>" as LoyaltySystem {
+    rectangle "Личный кабинет" {
+        usecase "Зарегистрироваться\nв личном кабинете" as Registration
+        usecase "Авторизоваться\nв личном кабинете" as Authorization
+        usecase "Посмотреть профиль\nв личном кабинете" as ProfileOverview
+        usecase "Отредактировать профиль\nв личном кабинете" as ModProfile
+        usecase "Удалить\nличный кабинет" as DeletePA
+    }
+
+    rectangle "Начисление баллов лояльности" {
+        usecase "Передать номер\nсовершённого заказа" as GetOrderIDFromConsumer
+        usecase "Сверка номера заказа" as CompareOrderID
+        usecase "Начисление баллов лояльности\nна счёт пользователя" as Accrual
+        usecase "Проверка номера \nзаказа с помощью\nалгоритма Луна" as Lu
+    }
+
+    rectangle "Получение информации о текущем балансе" {
+        usecase "Получить список загруженных\nномеров заказов" as GetUploadedOrderID
+    }
+}
+
+Consumer -- StoreIn
+
+Consumer -- Authorization
+Consumer -- Registration
+Consumer -- GetUploadedOrderID
+Consumer -- GetOrderIDFromConsumer
+
+StoreIn .. CalcPointsSystemIn
+
+Authorization ..> ProfileOverview : включает
+ProfileOverview ..> ModProfile : включает
+DeletePA .> ProfileOverview: расширяет
+
+GetOrderIDFromConsumer .. CompareOrderID
+Lu <. CompareOrderID : включает
+CompareOrderID ..> CalcPointsSystemIn : включает
+CompareOrderID .. Accrual
+
+@enduml
