@@ -1,0 +1,17 @@
+@startuml class
+
+struct user {
+    +Login string
+    +Points float64
+}
+
+struct server {
+    -router *chi.Mux
+    -logger  *logrus.Logger
+}
+
+struct config {
+    - runAddress string
+}
+
+@enduml
