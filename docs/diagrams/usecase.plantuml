@@ -1,52 +1,238 @@
 @startuml usecase
 
-actor "Пользователь" as Consumer #pink;line:red;line.bold
+'left to right direction
 
-package "Интернет-магазин << Гофермарт >>" as Store {
-    usecase "Интернет-магазин\n<< Гофермарт >>" as StoreIn
-}
-
-package "Система расчёта баллов лояльности << Гофермарт >>" as CalcPointsSystem {
-    usecase "Система расчёта\nбаллов лояльности << Гофермарт >>" as CalcPointsSystemIn
-}
+actor "Пользователь" as User #66FF66;line:Green;line.bold
+actor "Интернет-магазин\n<< Гофермарт >>" as Store #CCCCFF;line:Blue
+actor "Система расчёта\nбаллов лояльности\n<< Гофермарт >>" as CalcPointsSystem #CCCCFF;line:Blue
 
 package "Система лояльности << Гофермарт >>" as LoyaltySystem {
     rectangle "Личный кабинет" {
         usecase "Зарегистрироваться\nв личном кабинете" as Registration
+            note bottom of Registration
+                Регистрация производится по паре логин/пароль.
+                Каждый логин должен быть уникальным.
+                После успешной регистрации должна происходить
+                автоматическая аутентификация пользователя.
+                Для передачи аутентификационных данных
+                используйте механизм cookies или
+                HTTP-заголовок Authorization.
+                Формат запроса:
+                    POST /api/user/register HTTP/1.1
+                    Content-Type: application/json
+                    ...
+                    {
+                        "login": "<login>",
+                        "password": "<password>"
+                    }
+                Возможные коды ответа:
+                • 200 — пользователь успешно зарегистрирован
+                        и аутентифицирован;
+                • 400 — неверный формат запроса;
+                • 409 — логин уже занят;
+                • 500 — внутренняя ошибка сервера.
+            end note
+        
         usecase "Авторизоваться\nв личном кабинете" as Authorization
-        usecase "Посмотреть профиль\nв личном кабинете" as ProfileOverview
-        usecase "Отредактировать профиль\nв личном кабинете" as ModProfile
-        usecase "Удалить\nличный кабинет" as DeletePA
+            note bottom of Authorization
+                Аутентификация производится по паре логин/пароль.
+                Для передачи аутентификационных данных используйте
+                механизм cookies или HTTP-заголовок Authorization.
+                Формат запроса:
+                    POST /api/user/login HTTP/1.1
+                    Content-Type: application/json
+                    ...
+                    {
+                        "login": "<login>",
+                        "password": "<password>"
+                    }
+                Возможные коды ответа:
+                • 200 — пользователь успешно аутентифицирован;
+                • 400 — неверный формат запроса;
+                • 401 — неверная пара логин/пароль;
+                • 500 — внутренняя ошибка сервера.
+            end note
+
+    }
+   
+    rectangle "Получение информации" {
+        usecase "Получить список загруженных\nномеров заказов" as GetUploadedOrderID
+            note bottom of GetUploadedOrderID
+                Хендлер доступен только авторизованному пользователю.
+                Номера заказа в выдаче должны быть отсортированы
+                по времени загрузки от самых новых к самым старым.
+                Формат даты — RFC3339.
+                Доступные статусы обработки расчётов:
+                • NEW — заказ загружен в систему, но не попал в обработку;
+                • PROCESSING — вознаграждение за заказ рассчитывается;
+                • INVALID — система расчёта вознаграждений отказала в расчёте;
+                • PROCESSED — данные по заказу проверены и информация о
+                расчёте успешно получена.
+                Формат запроса:
+                    GET /api/user/orders HTTP/1.1
+                    Content-Length: 0
+                Возможные коды ответа:
+                • 200 — успешная обработка запроса.
+                Формат ответа:
+                    200 OK HTTP/1.1
+                    Content-Type: application/json
+                    ...
+                    [
+                        {
+                            "number": "9278923470",
+                            "status": "PROCESSED",
+                            "accrual": 500,
+                            "uploaded_at": "2020-12-10T15:15:45+03:00"
+                        },
+                        {
+                            "number": "12345678903",
+                            "status": "PROCESSING",
+                            "uploaded_at": "2020-12-10T15:12:01+03:00"
+                        },
+                        {
+                            "number": "346436439",
+                            "status": "INVALID",
+                            "uploaded_at": "2020-12-09T16:09:53+03:00"
+                        }
+                    ]
+                • 204 — нет данных для ответа.
+                • 401 — пользователь не авторизован.
+                • 500 — внутренняя ошибка сервера.
+            end note
+        
+        usecase "Получить сведения\nо текущем балансе" as GetBalance
+            note bottom of GetBalance
+                Хендлер доступен только авторизованному пользователю.
+                В ответе должны содержаться данные о текущей сумме
+                баллов лояльности, а также сумме использованных
+                за весь период регистрации баллов.
+                Формат запроса:
+                    GET /api/user/balance HTTP/1.1
+                    Content-Length: 0
+                Возможные коды ответа:
+                • 200 — успешная обработка запроса.
+                Формат ответа:
+                    200 OK HTTP/1.1
+                    Content-Type: application/json
+                    ...
+                    {
+                        "current": 500.5,
+                        "withdrawn": 42
+                    }
+                • 401 — пользователь не авторизован.
+                • 500 — внутренняя ошибка сервера.
+            endnote
+        
+        usecase "Посмотреть историю списания баллов" as GetHistory
+            note bottom of GetHistory
+                Хендлер доступен только авторизованному пользователю.
+                Факты выводов в выдаче должны быть отсортированы
+                по времени вывода от самых новых к самым старым.
+                Формат даты — RFC3339.
+                Формат запроса:
+                    GET /api/user/withdrawals HTTP/1.1
+                    Content-Length: 0
+                Возможные коды ответа:
+                • 200 — успешная обработка запроса.
+                Формат ответа:
+                    200 OK HTTP/1.1
+                    Content-Type: application/json
+                    ...
+                    [
+                        {
+                            "order": "2377225624",
+                            "sum": 500,
+                            "processed_at": "2020-12-09T16:09:57+03:00"
+                        }
+                    ]
+                • 204 — нет ни одного списания.
+                • 401 — пользователь не авторизован.
+                • 500 — внутренняя ошибка сервера.
+            endnote
     }
 
-    rectangle "Начисление баллов лояльности" {
-        usecase "Передать номер\nсовершённого заказа" as GetOrderIDFromConsumer
+    rectangle "Начисление и списание баллов лояльности" {
+        usecase "Списать накопленные баллы\nв счёт оплаты заказа" as ApplyPoints
+            note bottom of ApplyPoints
+                Хендлер доступен только
+                авторизованному пользователю.
+                Номер заказа представляет собой
+                гипотетический номер нового заказа
+                пользователя, в счёт оплаты которого
+                списываются баллы.
+                Примечание: для успешного списания
+                достаточно успешной регистрации запроса,
+                никаких внешних систем начисления
+                не предусмотрено и не требуется
+                реализовывать.
+                Формат запроса:
+                    POST /api/user/balance/withdraw HTTP/1.1
+                    Content-Type: application/json
+                    {
+                        "order": "2377225624",
+                        "sum": 751
+                    }
+                Здесь order — номер заказа,
+                а sum — сумма баллов к списанию в счёт оплаты.
+                Возможные коды ответа:
+                • 200 — успешная обработка запроса;
+                • 401 — пользователь не авторизован;
+                • 402 — на счету недостаточно средств;
+                • 422 — неверный номер заказа;
+                • 500 — внутренняя ошибка сервера.
+            endnote
+
+        usecase "Передать номер\nсовершённого заказа\nв интернет-магазине\n<< Гофермарт >>" as PutOrderID
+            note bottom of PutOrderID
+                Хендлер доступен только
+                аутентифицированным пользователям.
+                Номером заказа является последовательность
+                цифр произвольной длины.
+                Номер заказа может быть проверен на
+                корректность ввода с помощью алгоритма Луна.
+                Формат запроса:
+                    POST /api/user/orders HTTP/1.1
+                    Content-Type: text/plain
+                    ...
+                    12345678903
+                Возможные коды ответа:
+                • 200 — номер заказа уже был загружен этим пользователем;
+                • 202 — новый номер заказа принят в обработку;
+                • 400 — неверный формат запроса;
+                • 401 — пользователь не аутентифицирован;
+                • 409 — номер заказа уже был загружен другим пользователем;
+                • 422 — неверный формат номера заказа;
+                • 500 — внутренняя ошибка сервера.
+            end note
+
         usecase "Сверка номера заказа" as CompareOrderID
         usecase "Начисление баллов лояльности\nна счёт пользователя" as Accrual
         usecase "Проверка номера \nзаказа с помощью\nалгоритма Луна" as Lu
     }
-
-    rectangle "Получение информации о текущем балансе" {
-        usecase "Получить список загруженных\nномеров заказов" as GetUploadedOrderID
-    }
 }
 
-Consumer -- StoreIn
+User -- Store
 
-Consumer -- Authorization
-Consumer -- Registration
-Consumer -- GetUploadedOrderID
-Consumer -- GetOrderIDFromConsumer
+User -- Authorization : <font color=#FF0000><b>POST /api/user/login
+User -- Registration : <font color=#FF0000><b>POST /api/user/register
 
-StoreIn .. CalcPointsSystemIn
+User -- GetUploadedOrderID : <font color=#FF0000><b>GET /api/user/orders
+User -- GetHistory : <font color=#FF0000><b>GET /api/user/withdrawals
+User -- GetBalance : <font color=#FF0000><b>GET /api/user/balance
 
-Authorization ..> ProfileOverview : включает
-ProfileOverview ..> ModProfile : включает
-DeletePA .> ProfileOverview: расширяет
 
-GetOrderIDFromConsumer .. CompareOrderID
+User -- ApplyPoints : <font color=#FF0000><b>POST /api/user/balance/withdraw
+User -- PutOrderID : <font color=#FF0000><b>POST /api/user/orders
+
+Registration .>Authorization : включает
+
+Store .. CalcPointsSystem
+
+PutOrderID .. CompareOrderID
 Lu <. CompareOrderID : включает
-CompareOrderID ..> CalcPointsSystemIn : включает
+CompareOrderID ..> CalcPointsSystem : включает
 CompareOrderID .. Accrual
+
+
 
 @enduml
