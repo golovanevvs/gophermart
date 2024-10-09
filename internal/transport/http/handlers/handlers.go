@@ -1,14 +1,14 @@
 package handlers
 
 type HandlersStr struct {
-	service ServicesInt
+	service ServiceInt
 }
 
-type ServicesInt interface {
+type ServiceInt interface {
 	RegisterUser() string
 }
 
-func New(sv ServicesInt) HandlersStr {
+func New(sv ServiceInt) HandlersStr {
 	return HandlersStr{
 		service: sv,
 	}
