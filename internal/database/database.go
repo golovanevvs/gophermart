@@ -1,6 +1,4 @@
 package database
 
-type database interface {
-	SaveToDB()
-	GetFromDB()
+type databaseStr struct {
 }

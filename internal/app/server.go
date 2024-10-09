@@ -1,21 +1,22 @@
 package app
 
 import (
-	"github.com/go-chi/chi"
-	"github.com/golovanevvs/gophermart/internal/config"
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"net/http"
+
+	"github.com/golovanevvs/gophermart/internal/database/postgres"
+	"github.com/golovanevvs/gophermart/internal/services"
+	"github.com/golovanevvs/gophermart/internal/transport/http/handlers"
+	"github.com/golovanevvs/gophermart/internal/transport/http/router"
 )
 
-type server struct {
-	router *chi.Mux
-	logger *logrus.Logger
-	config *config.Config
-}
-
 func StartServer() {
+	db := postgres.New()
+	sv := services.New(db)
+	hd := handlers.New(sv)
+	rt := router.New(hd)
 
-}
-
-func New() {
-	logger := logrus.New()
+	if err := http.ListenAndServe(":8080", rt); err != nil {
+		fmt.Printf("Ошибка сервера: %v\n", err)
+	}
 }
