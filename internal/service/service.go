@@ -1,15 +1,17 @@
 package service
 
-type serviceStr struct {
-	db DatabaseInt
+import "github.com/golovanevvs/gophermart/internal/storage"
+
+type AuthInt interface {
+	CreateUser() string
 }
 
-type DatabaseInt interface {
-	SaveToDB() string
+type ServiceStr struct {
+	AuthInt
 }
 
-func New(db DatabaseInt) serviceStr {
-	return serviceStr{
-		db: db,
+func NewService(st *storage.StorageStr) *ServiceStr {
+	return &ServiceStr{
+		AuthInt: NewAuthService(st),
 	}
 }

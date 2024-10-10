@@ -1,0 +1,3 @@
+Компиляция и запуск:
+
+cd /c/Golovanev/Dev/Projects/YaPracticum/gophermart/cmd/gophermart && go build && start gophermart

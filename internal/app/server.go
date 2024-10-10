@@ -1,26 +1,27 @@
 package app
 
 import (
+	"context"
 	"net/http"
-
-	"github.com/golovanevvs/gophermart/internal/database/postgres"
-	"github.com/golovanevvs/gophermart/internal/service"
-	"github.com/golovanevvs/gophermart/internal/transport/http/handlers"
-	"github.com/golovanevvs/gophermart/internal/transport/http/router"
-	"github.com/sirupsen/logrus"
 )
 
-func StartServer() {
-	lg := logrus.New()
-	lg.SetLevel(logrus.DebugLevel)
+type Server struct {
+	httpsrv *http.Server
+}
 
-	db := postgres.New()
-	sv := service.New(db)
-	hd := handlers.New(sv)
-	rt := router.New(hd)
+func NewServer() *Server {
+	return &Server{}
+}
 
-	lg.Infof("Сервер накопительной системы лояльности Гофермарт запущен")
-	if err := http.ListenAndServe(":8080", rt); err != nil {
-		lg.Errorf("Ошибка сервера: %v", err)
+func (srv *Server) RunServer(runAddress string, handler http.Handler) error {
+	srv.httpsrv = &http.Server{
+		Addr:    runAddress,
+		Handler: handler,
 	}
+
+	return srv.httpsrv.ListenAndServe()
+}
+
+func (srv *Server) ShutdownServer(ctx context.Context) error {
+	return srv.httpsrv.Shutdown(ctx)
 }
