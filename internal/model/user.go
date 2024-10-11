@@ -1,7 +1,6 @@
-package models
+package model
 
 type User struct {
-	Login             string `json:"login"`
-	Password          string `json:"password"`
-	EncryptedPassword string
+	Login    string `json:"login"`
+	Password string `json:"password"`
 }

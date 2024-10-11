@@ -9,8 +9,13 @@ type AuthInt interface {
 	CreateUser() string
 }
 
+type RegisterStInt interface {
+	CreateUser() string
+}
+
 type StorageStr struct {
 	AuthInt
+	RegisterStInt
 }
 
 func NewStorage(db *sqlx.DB) *StorageStr {

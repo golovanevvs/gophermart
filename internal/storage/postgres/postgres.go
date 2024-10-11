@@ -11,6 +11,10 @@ type AuthPostgresStr struct {
 	db *sqlx.DB
 }
 
+type RegisterPostgresStr struct {
+	db *sqlx.DB
+}
+
 func NewPostgres(databaseURI string) (*sqlx.DB, error) {
 	db, err := sqlx.Open("pgx", databaseURI)
 	if err != nil {
@@ -27,6 +31,12 @@ func NewPostgres(databaseURI string) (*sqlx.DB, error) {
 
 func NewAuthPostgres(db *sqlx.DB) *AuthPostgresStr {
 	return &AuthPostgresStr{
+		db: db,
+	}
+}
+
+func NewRegisterPostgres(db *sqlx.DB) *RegisterPostgresStr {
+	return &RegisterPostgresStr{
 		db: db,
 	}
 }

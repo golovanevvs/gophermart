@@ -9,8 +9,9 @@ import (
 
 // структура для хранения сведений об ответе
 type responseData struct {
-	status int
-	size   int
+	status      int
+	size        int
+	contentType string
 }
 
 // структура с http.ResponseWriter и responseData
@@ -26,6 +27,7 @@ func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
 	//захватваем размер
 	r.responseData.size += size
+
 	return size, err
 }
 
@@ -34,6 +36,8 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)
 	// захватываем код статуса
 	r.responseData.status = statusCode
+	// захватываем тип контента
+	r.responseData.contentType = r.Header().Get("Content-Type")
 }
 
 // WithLogging - middleware, Функция-оболочка, которая оборачивает http.Handler
@@ -46,8 +50,9 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 
 			// создаём экземпляр структуры responseData
 			responseData := &responseData{
-				status: 0,
-				size:   0,
+				status:      0,
+				size:        0,
+				contentType: "",
 			}
 
 			// создаём экземпляр структуры loggingResponseWriter
@@ -71,6 +76,8 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 			// записываем данные ответа
 			// статус
 			resStatus := responseData.status
+			// тип контента
+			resContentType := responseData.contentType
 			// размер
 			resSize := responseData.size
 
@@ -78,12 +85,13 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 			duration := time.Since(start)
 
 			// отправляем сведения в логгер
-			lg.Debugf("Request method: %v.", reqMethod)
-			lg.Debugf("Request URI: %v.", reqURI)
+			lg.Debugf("Request method: %v", reqMethod)
+			lg.Debugf("Request URI: %v", reqURI)
 			lg.Debugf("Request Content-Type: %v", reqContentType)
-			lg.Debugf("Response status: %v.", resStatus)
-			lg.Debugf("Response size: %v.", resSize)
-			lg.Debugf("Duration: %v.", duration)
+			lg.Debugf("Response status: %v", resStatus)
+			lg.Debugf("Response Content-Type: %v", resContentType)
+			lg.Debugf("Response size: %v", resSize)
+			lg.Debugf("Duration: %v", duration)
 		})
 	}
 }
