@@ -43,7 +43,7 @@ func RunApp() {
 	// запуск сервера
 	go func() {
 		lg.Infof("Сервер накопительной системы лояльности Гофермарт запущен")
-		if err := srv.RunServer(cfg.RunAddress, hd.InitRoutes()); err != nil {
+		if err := srv.RunServer(cfg.RunAddress, hd.InitRoutes(lg)); err != nil {
 			lg.Fatalf("Ошибка запуска сервера: %v", err.Error())
 		}
 	}()
