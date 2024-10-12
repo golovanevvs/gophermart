@@ -1,17 +1,22 @@
 package service
 
-import "github.com/golovanevvs/gophermart/internal/storage"
+import (
+	"context"
+
+	"github.com/golovanevvs/gophermart/internal/model"
+	"github.com/golovanevvs/gophermart/internal/storage"
+)
 
 type AuthInt interface {
-	CreateUser() string
+	CreateUser(ctx context.Context, user model.User) error
 }
 
-type ServiceStr struct {
+type ServiceStrInt struct {
 	AuthInt
 }
 
-func NewService(st *storage.StorageStr) *ServiceStr {
-	return &ServiceStr{
+func NewService(st *storage.StorageStrInt) *ServiceStrInt {
+	return &ServiceStrInt{
 		AuthInt: NewAuthService(st),
 	}
 }

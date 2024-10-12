@@ -1,25 +1,23 @@
 package storage
 
 import (
+	"context"
+
+	"github.com/golovanevvs/gophermart/internal/model"
 	"github.com/golovanevvs/gophermart/internal/storage/postgres"
 	"github.com/jmoiron/sqlx"
 )
 
-type AuthInt interface {
-	CreateUser() string
+type AllStorageInt interface {
+	CreateUser(ctx context.Context, user model.User) error
 }
 
-type RegisterStInt interface {
-	CreateUser() string
+type StorageStrInt struct {
+	AllStorageInt
 }
 
-type StorageStr struct {
-	AuthInt
-	RegisterStInt
-}
-
-func NewStorage(db *sqlx.DB) *StorageStr {
-	return &StorageStr{
-		AuthInt: postgres.NewAuthPostgres(db),
+func NewStorage(db *sqlx.DB) *StorageStrInt {
+	return &StorageStrInt{
+		AllStorageInt: postgres.NewAllPostgres(db),
 	}
 }

@@ -1,17 +1,19 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/golovanevvs/gophermart/internal/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
-type AuthPostgresStr struct {
-	db *sqlx.DB
-}
+const (
+	usersTable = "account"
+)
 
-type RegisterPostgresStr struct {
+type allPostgresStr struct {
 	db *sqlx.DB
 }
 
@@ -29,18 +31,24 @@ func NewPostgres(databaseURI string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func NewAuthPostgres(db *sqlx.DB) *AuthPostgresStr {
-	return &AuthPostgresStr{
+func NewAllPostgres(db *sqlx.DB) *allPostgresStr {
+	return &allPostgresStr{
 		db: db,
 	}
 }
 
-func NewRegisterPostgres(db *sqlx.DB) *RegisterPostgresStr {
-	return &RegisterPostgresStr{
-		db: db,
-	}
-}
+func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) error {
+	query := fmt.Sprintf(`
+	INSERT INTO %s
+		(login, password_hash)
+		VALUES
+		($1, $2)
+	`, usersTable)
 
-func (ap *AuthPostgresStr) CreateUser() string {
-	return fmt.Sprintf("CreateUser")
+	_, err := ap.db.ExecContext(ctx, query, user.Login, user.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

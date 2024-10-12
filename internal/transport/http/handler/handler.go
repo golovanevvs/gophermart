@@ -7,19 +7,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type HandlerStr struct {
-	sv *service.ServiceStr
+type handlerStr struct {
+	sv *service.ServiceStrInt
 }
 
 // NewHandler - конструктор *HandlerStr
-func NewHandler(sv *service.ServiceStr) *HandlerStr {
-	return &HandlerStr{
+func NewHandler(sv *service.ServiceStrInt) *handlerStr {
+	return &handlerStr{
 		sv: sv,
 	}
 }
 
-// InitRoutes - маршрутизация запросов
-func (hd *HandlerStr) InitRoutes(lg *logrus.Logger) *chi.Mux {
+// InitRoutes - маршрутизация запросов, используется в качестве http.Handler при запуске сервера
+func (hd *handlerStr) InitRoutes(lg *logrus.Logger) *chi.Mux {
 	// создание экземпляра роутера
 	rt := chi.NewRouter()
 
@@ -29,7 +29,7 @@ func (hd *HandlerStr) InitRoutes(lg *logrus.Logger) *chi.Mux {
 
 	// маршруты
 	rt.Route("/api/user", func(r chi.Router) {
-		r.Post("/register", hd.Register)
+		r.Post("/register", hd.register)
 	})
 
 	return rt
