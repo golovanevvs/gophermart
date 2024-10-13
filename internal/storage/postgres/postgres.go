@@ -52,3 +52,23 @@ func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) error
 
 	return nil
 }
+
+func (ap *allPostgresStr) GetUser(ctx context.Context, login, password string) (model.User, error) {
+	query := fmt.Sprintf(`
+	SELECT user_id FROM %s
+	WHERE login=$1 AND password_hash=$2;
+	`, usersTable)
+
+	row := ap.db.QueryRowContext(ctx, query, login, password)
+
+	var user model.User
+
+	err := row.Scan(&user.UserID)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	user.Login = login
+
+	return user, nil
+}
