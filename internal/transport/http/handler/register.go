@@ -15,6 +15,7 @@ func (hd *handlerStr) register(w http.ResponseWriter, r *http.Request) {
 	case "application/json":
 	default:
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Неверный формат запроса"))
 		return
 	}
 
@@ -22,6 +23,7 @@ func (hd *handlerStr) register(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Write([]byte("Внутренняя ошибка сервера"))
 		return
 	}
 
@@ -29,14 +31,16 @@ func (hd *handlerStr) register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// если логин уже существует в БД
 		if strings.Contains(err.Error(), "Unique") {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Такой login уже существует"))
+			w.WriteHeader(http.StatusConflict)
+			w.Write([]byte("Логин уже занят"))
 			return
 		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Write([]byte("Внутренняя ошибка сервера"))
 		return
 	}
 
-	// установка заголовков
+	// запись заголовков и ответа
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Пользователь успешно зарегистрирован"))
 }
