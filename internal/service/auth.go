@@ -38,7 +38,7 @@ func (as *authServiceStr) CreateUser(ctx context.Context, user model.User) error
 }
 
 func (as *authServiceStr) GenToken(ctx context.Context, login, password string) (string, error) {
-	user, err := as.st.GetUser(ctx, login, genPasswordHash(password))
+	user, err := as.st.GetUserByLoginPassword(ctx, login, genPasswordHash(password))
 	if err != nil {
 		return "", nil
 	}

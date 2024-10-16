@@ -53,7 +53,7 @@ func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) error
 	return nil
 }
 
-func (ap *allPostgresStr) GetUser(ctx context.Context, login, password string) (model.User, error) {
+func (ap *allPostgresStr) GetUserByLoginPassword(ctx context.Context, login, password string) (model.User, error) {
 	query := fmt.Sprintf(`
 	SELECT user_id FROM %s
 	WHERE login=$1 AND password_hash=$2;
