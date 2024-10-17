@@ -2,15 +2,10 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/golovanevvs/gophermart/internal/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-)
-
-const (
-	usersTable = "account"
 )
 
 type allPostgresStr struct {
@@ -37,29 +32,28 @@ func NewAllPostgres(db *sqlx.DB) *allPostgresStr {
 	}
 }
 
-func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) error {
-	query := fmt.Sprintf(`
-	INSERT INTO %s
-		(login, password_hash)
-		VALUES
-		($1, $2)
-	`, usersTable)
+func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) (int, error) {
+	var userID int
 
-	_, err := ap.db.ExecContext(ctx, query, user.Login, user.Password)
-	if err != nil {
-		return err
+	row := ap.db.QueryRowContext(ctx, `
+	INSERT INTO account
+		(login, password_hash)
+	VALUES
+		($1, $2)
+	RETURNING user_id
+	`, user.Login, user.PasswordHash)
+	if err := row.Scan(&userID); err != nil {
+		return 0, err
 	}
 
-	return nil
+	return userID, nil
 }
 
-func (ap *allPostgresStr) GetUserByLoginPassword(ctx context.Context, login, password string) (model.User, error) {
-	query := fmt.Sprintf(`
+func (ap *allPostgresStr) GetUserByLoginPasswordHash(ctx context.Context, login, passwordHash string) (model.User, error) {
+	row := ap.db.QueryRowContext(ctx, `
 	SELECT user_id FROM %s
 	WHERE login=$1 AND password_hash=$2;
-	`, usersTable)
-
-	row := ap.db.QueryRowContext(ctx, query, login, password)
+	`, login, passwordHash)
 
 	var user model.User
 

@@ -8,11 +8,23 @@ import (
 )
 
 type AuthInt interface {
-	CreateUser(ctx context.Context, user model.User) error
+	CreateUser(ctx context.Context, user model.User) (int, error)
+	GenToken(ctx context.Context, login, password string) (string, error)
+	ParseToken(tokenString string) (int, error)
+}
+
+type authServiceStr struct {
+	st storage.AllStorageInt
 }
 
 type ServiceStrInt struct {
 	AuthInt
+}
+
+func NewAuthService(st storage.AllStorageInt) *authServiceStr {
+	return &authServiceStr{
+		st: st,
+	}
 }
 
 func NewService(st *storage.StorageStrInt) *ServiceStrInt {

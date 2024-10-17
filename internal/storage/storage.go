@@ -9,8 +9,8 @@ import (
 )
 
 type AllStorageInt interface {
-	CreateUser(ctx context.Context, user model.User) error
-	GetUserByLoginPassword(ctx context.Context, login, password string) (model.User, error)
+	CreateUser(ctx context.Context, user model.User) (int, error)
+	GetUserByLoginPasswordHash(ctx context.Context, login, password string) (model.User, error)
 }
 
 type StorageStrInt struct {

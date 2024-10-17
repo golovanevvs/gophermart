@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -27,7 +28,8 @@ func (hd *handlerStr) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := hd.sv.AuthInt.CreateUser(r.Context(), user)
+	// запуск сервиса CreateUser, проверка ошибок
+	userID, err := hd.sv.AuthInt.CreateUser(r.Context(), user)
 	if err != nil {
 		// если логин уже существует в БД
 		if strings.Contains(err.Error(), "Unique") {
@@ -39,8 +41,10 @@ func (hd *handlerStr) register(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Внутренняя ошибка сервера"))
 		return
 	}
+	user.UserID = userID
 
 	// запись заголовков и ответа
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Пользователь успешно зарегистрирован"))
+	res := fmt.Sprintf("Пользователь %v успешно зарегистрирован под номером %v", user.Login, user.UserID)
+	w.Write([]byte(res))
 }
