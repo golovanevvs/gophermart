@@ -9,8 +9,8 @@ import (
 
 type AuthInt interface {
 	CreateUser(ctx context.Context, user model.User) (int, error)
-	GenToken(ctx context.Context, login, password string) (string, error)
-	ParseToken(tokenString string) (int, error)
+	BuildJWTString(ctx context.Context, login, password string) (string, error)
+	GetUserIDFromJWT(tokenString string) (int, error)
 }
 
 type authServiceStr struct {

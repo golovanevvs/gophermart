@@ -18,7 +18,7 @@ type claims struct {
 	UserID int
 }
 
-func (as *authServiceStr) GenToken(ctx context.Context, login, password string) (string, error) {
+func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password string) (string, error) {
 	user, err := as.st.GetUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
 	if err != nil {
 		return "", nil
@@ -37,7 +37,7 @@ func (as *authServiceStr) GenToken(ctx context.Context, login, password string) 
 	return tokenString, nil
 }
 
-func (as *authServiceStr) ParseToken(tokenString string) (int, error) {
+func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
 	claims := &claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
