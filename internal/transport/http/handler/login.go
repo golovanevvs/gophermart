@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/golovanevvs/gophermart/internal/model"
@@ -26,8 +27,13 @@ func (hd *handlerStr) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := hd.sv.BuildJWTString(r.Context(),user.Login, user.Password)
-	if err != nil {
-		http.Error(w, err.Error(), http.)
+	// получение строки токена
+	tokenString, customErr := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
+	if customErr.IsError {
+		http.Error(w, customErr.CustomErr.Error(), http.StatusInternalServerError)
 	}
+
+	// отправка заголовков
+	w.Header().Set("Authorization", fmt.Sprintf("Bearer", tokenString))
+	w.WriteHeader(http.StatusOK)
 }

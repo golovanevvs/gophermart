@@ -34,4 +34,5 @@ func (hd *handlerStr) authByJWT(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
+
 }
