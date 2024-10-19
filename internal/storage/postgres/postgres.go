@@ -51,7 +51,7 @@ func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) (int,
 
 func (ap *allPostgresStr) GetUserByLoginPasswordHash(ctx context.Context, login, passwordHash string) (model.User, error) {
 	row := ap.db.QueryRowContext(ctx, `
-	SELECT user_id FROM %s
+	SELECT user_id FROM account
 	WHERE login=$1 AND password_hash=$2;
 	`, login, passwordHash)
 

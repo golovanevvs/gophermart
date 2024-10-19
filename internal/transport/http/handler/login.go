@@ -31,9 +31,10 @@ func (hd *handlerStr) login(w http.ResponseWriter, r *http.Request) {
 	tokenString, customErr := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
 	if customErr.IsError {
 		http.Error(w, customErr.CustomErr.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// отправка заголовков
-	w.Header().Set("Authorization", fmt.Sprintf("Bearer", tokenString))
+	w.Header().Set("Authorization", fmt.Sprint("Bearer", tokenString))
 	w.WriteHeader(http.StatusOK)
 }
