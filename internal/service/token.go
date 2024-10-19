@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/golovanevvs/gophermart/internal/customerror"
+	"github.com/golovanevvs/gophermart/internal/customerrors"
 )
 
 const (
@@ -19,10 +19,10 @@ type claims struct {
 	UserID int
 }
 
-func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password string) (string, error, customerror.CustomError) {
+func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError) {
 	user, err := as.st.GetUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
 	if err != nil {
-		return "", err, customerror.Err500
+		return "", customerrors.New(err, customerrors.InternalServerError500)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
@@ -33,9 +33,9 @@ func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password st
 	})
 	tokenString, err := token.SignedString([]byte(SECRET_KEY))
 	if err != nil {
-		return "", err
+		return "", customerrors.New(err, customerrors.Err400)
 	}
-	return tokenString, nil
+	return tokenString, customerrors.New(nil)
 }
 
 func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
