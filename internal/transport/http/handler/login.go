@@ -25,4 +25,9 @@ func (hd *handlerStr) login(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Внутренняя ошибка сервера"))
 		return
 	}
+
+	token, err := hd.sv.BuildJWTString(r.Context(),user.Login, user.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.)
+	}
 }
