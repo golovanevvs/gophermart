@@ -17,10 +17,13 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// получение userID
-	userID := r.Context().Value(UserIDContextKey)
+	var userID int
+	userID = r.Context().Value(UserIDContextKey).(int)
+
+	// запуск сервиса
+	//err := hd.sv.UploadOrder(r.Context(), userID, orderID)
 
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "text/plain")
 
 	w.Write([]byte(fmt.Sprintf("Orders: userID = %v", userID)))
 }

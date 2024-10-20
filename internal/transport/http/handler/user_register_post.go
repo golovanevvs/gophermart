@@ -30,7 +30,7 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// запуск сервиса CreateUser, проверка ошибок
-	userID, err := hd.sv.AuthInt.CreateUser(r.Context(), user)
+	userID, err := hd.sv.AuthServiceInt.CreateUser(r.Context(), user)
 	if err != nil {
 		// если логин уже существует в БД
 		if strings.Contains(err.Error(), "Unique") {
