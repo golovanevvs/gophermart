@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	TOKEN_EXP  = time.Hour * 3 // время жизни токена
-	SECRET_KEY = "sskey"       // секретный ключ токена
+	TokenExp  = time.Hour * 3 // время жизни токена
+	SecretKey = "sskey"       // секретный ключ токена
 )
 
 // структура утверждений
@@ -31,13 +31,13 @@ func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password st
 	// создание токена
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 		},
 		UserID: user.UserID,
 	})
 
 	// создание строки токена
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
 		return "", customerrors.New(err, customerrors.InternalServerError500)
 	}
@@ -53,7 +53,7 @@ func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("неверный метод подписи")
 		}
-		return []byte(SECRET_KEY), nil
+		return []byte(SecretKey), nil
 	})
 	if err != nil {
 		return -1, err

@@ -17,7 +17,7 @@ func (hd *handlerStr) orders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// проверка, что пользователь авторизован
-	userID := r.Context().Value("userIDContextKey")
+	userID := r.Context().Value(UserIDContextKey)
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/plain")

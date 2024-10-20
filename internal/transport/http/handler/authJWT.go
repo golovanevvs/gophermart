@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+type contextKey string
+
+const UserIDContextKey contextKey = "userID"
+
 // авторизация пользователя по токену заголовка Authorization
 func (hd *handlerStr) authByJWT(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +43,7 @@ func (hd *handlerStr) authByJWT(next http.Handler) http.Handler {
 		}
 
 		// оформление передачи userID с помощью контекста
-		ctx := context.WithValue(r.Context(), "userIDContextKey", userID)
+		ctx := context.WithValue(r.Context(), UserIDContextKey, userID)
 
 		// точка входа основного хендлера
 		next.ServeHTTP(w, r.WithContext(ctx))
