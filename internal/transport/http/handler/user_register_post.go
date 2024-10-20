@@ -9,7 +9,7 @@ import (
 	"github.com/golovanevvs/gophermart/internal/model"
 )
 
-func (hd *handlerStr) register(w http.ResponseWriter, r *http.Request) {
+func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	// проверка Content-Type
 	contentType := r.Header.Get("Content-Type")
 	switch contentType {

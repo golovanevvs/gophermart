@@ -5,18 +5,18 @@ import (
 	"net/http"
 )
 
-func (hd *handlerStr) orders(w http.ResponseWriter, r *http.Request) {
+func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	// проверка Content-Type
 	contentType := r.Header.Get("Content-Type")
 	switch contentType {
-	case "application/json":
+	case "text/plain":
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Неверный формат запроса"))
 		return
 	}
 
-	// проверка, что пользователь авторизован
+	// получение userID
 	userID := r.Context().Value(UserIDContextKey)
 
 	w.WriteHeader(http.StatusOK)

@@ -29,8 +29,9 @@ func (hd *handlerStr) InitRoutes(lg *logrus.Logger) *chi.Mux {
 
 	// маршруты
 	rt.Route("/api/user", func(r chi.Router) {
-		r.Post("/register", hd.register)
-		r.With(hd.authByJWT).Post("/orders", hd.orders)
+		r.Post("/register", hd.userRegister)
+		r.Post("/login", hd.userLogin)
+		r.With(hd.authByJWT).Post("/orders", hd.userUploadOrder)
 	})
 
 	return rt
