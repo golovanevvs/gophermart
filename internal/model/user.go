@@ -5,4 +5,5 @@ type User struct {
 	Login        string `json:"login"`
 	Password     string `json:"password"`
 	PasswordHash string `db:"password_hash"`
+	Points       int    `db:"points"`
 }

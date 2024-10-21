@@ -32,16 +32,17 @@ func NewAllPostgres(db *sqlx.DB) *allPostgresStr {
 	}
 }
 
-func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) (int, error) {
-	var userID int
+func (ap *allPostgresStr) SaveUser(ctx context.Context, user model.User) (int, error) {
 
 	row := ap.db.QueryRowContext(ctx, `
 	INSERT INTO account
-		(login, password_hash)
+	(login, password_hash)
 	VALUES
-		($1, $2)
+	($1, $2)
 	RETURNING user_id
 	`, user.Login, user.PasswordHash)
+
+	var userID int
 	if err := row.Scan(&userID); err != nil {
 		return 0, err
 	}
@@ -49,7 +50,7 @@ func (ap *allPostgresStr) CreateUser(ctx context.Context, user model.User) (int,
 	return userID, nil
 }
 
-func (ap *allPostgresStr) GetUserByLoginPasswordHash(ctx context.Context, login, passwordHash string) (model.User, error) {
+func (ap *allPostgresStr) LoadUserByLoginPasswordHash(ctx context.Context, login, passwordHash string) (model.User, error) {
 	row := ap.db.QueryRowContext(ctx, `
 	SELECT user_id FROM account
 	WHERE login=$1 AND password_hash=$2;
@@ -65,4 +66,37 @@ func (ap *allPostgresStr) GetUserByLoginPasswordHash(ctx context.Context, login,
 	user.Login = login
 
 	return user, nil
+}
+
+func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (int, error) {
+	row := ap.db.QueryRowContext(ctx, `
+	SELECT points FROM account
+	WHERE user_id=$1
+	`, userID)
+
+	var points int
+	err := row.Scan(&points)
+	if err != nil {
+		return 0, err
+	}
+
+	return points, nil
+}
+
+func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error) {
+	row := ap.db.QueryRowContext(ctx, `
+	INSERT INTO order
+		(order_number)
+	VALUES
+		($1)
+	WHERE user_id=$2
+	RETURNING order_id
+	`, orderNumber, userID)
+
+	var orderID int
+	if err := row.Scan(&orderID); err != nil {
+		return 0, err
+	}
+
+	return orderID, nil
 }

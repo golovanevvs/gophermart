@@ -23,7 +23,7 @@ type claims struct {
 // BuildJWTString создаёт токен и возвращает его в виде строки
 func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError) {
 	// получение пользователя из БД
-	user, err := as.st.GetUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
+	user, err := as.st.LoadUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
 	if err != nil {
 		return "", customerrors.New(err, customerrors.InternalServerError500)
 	}

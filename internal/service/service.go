@@ -15,7 +15,7 @@ type AuthServiceInt interface {
 }
 
 type OrderServiceInt interface {
-	UploadOrder(ctx context.Context, userID int, orderID int) error
+	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, error)
 }
 
 type authServiceStr struct {
