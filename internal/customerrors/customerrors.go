@@ -7,8 +7,11 @@ type customErr string
 const (
 	Err400                 customErr = "неверный формат запроса"
 	Err401                 customErr = "неверная пара логин/пароль"
-	BusyLogin409           customErr = "логин уже занят"
+	DBError500             customErr = "ошибка БД"
+	DBBusyLogin409         customErr = "ошибка БД: логин уже занят"
 	InternalServerError500 customErr = "внутренняя ошибка сервера"
+	InvalidContentType400  customErr = "неверный Content-Type"
+	DecodeJSONError500     customErr = "ошибка десериализации JSON"
 )
 
 type CustomError struct {
@@ -19,8 +22,6 @@ type CustomError struct {
 
 func New(err error, customErr customErr) CustomError {
 	var customError CustomError
-
-	customError.IsError = false
 
 	if err != nil || len(customErr) > 0 {
 		customError.IsError = true

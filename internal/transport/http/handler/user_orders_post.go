@@ -2,7 +2,9 @@ package handler
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"strconv"
 )
 
 func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
@@ -17,13 +19,34 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// получение userID
-	var userID int
-	userID = r.Context().Value(UserIDContextKey).(int)
+	userID := r.Context().Value(UserIDContextKey).(int)
+
+	// чтение тела запроса
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Неверный формат запроса"))
+		return
+	}
+
+	// получение номера заказа
+	orderNumber, err := strconv.Atoi(string(body))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Неверный формат запроса"))
+		return
+	}
 
 	// запуск сервиса
-	//err := hd.sv.UploadOrder(r.Context(), userID, orderID)
+	orderID, err := hd.sv.UploadOrder(r.Context(), userID, orderNumber)
+	// TODO: добавить обработку кастомных ошибок
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Неверный формат запроса"))
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 
-	w.Write([]byte(fmt.Sprintf("Orders: userID = %v", userID)))
+	w.Write([]byte(fmt.Sprintf("Заказ от пользователя с userID %v принят под номером %v", userID, orderID)))
 }

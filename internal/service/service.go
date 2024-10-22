@@ -9,7 +9,7 @@ import (
 )
 
 type AuthServiceInt interface {
-	CreateUser(ctx context.Context, user model.User) (int, error)
+	CreateUser(ctx context.Context, user model.User) (int, customerrors.CustomError)
 	BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError)
 	GetUserIDFromJWT(tokenString string) (int, error)
 }

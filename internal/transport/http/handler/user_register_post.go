@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
 )
 
@@ -16,31 +17,29 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	case "application/json":
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Неверный формат запроса"))
+		w.Write([]byte(fmt.Sprintf("Ошибка %v: %v. Требуется: application/json. Получено: %v", http.StatusBadRequest, string(customerrors.InvalidContentType400), contentType)))
 		return
 	}
 
 	// десериализация JSON (user.Login, user.Password)
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		fmt.Println("Ошибка в NewDecoder")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Write([]byte("Внутренняя ошибка сервера"))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Ошибка %v: %v, %v", http.StatusInternalServerError, string(customerrors.ErrorDecodeJSON500), err.Error())))
 		return
 	}
 
 	// запуск сервиса CreateUser, проверка ошибок
+	// TODO: Обработать кастомные ошибки
 	userID, err := hd.sv.AuthServiceInt.CreateUser(r.Context(), user)
 	if err != nil {
 		// если логин уже существует в БД
 		if strings.Contains(err.Error(), "Unique") {
-			fmt.Println("Ошибка в CreateUser1")
 			w.WriteHeader(http.StatusConflict)
 			w.Write([]byte("Логин уже занят"))
 			return
 		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		fmt.Println("Ошибка в CreateUser2")
 		w.Write([]byte("Внутренняя ошибка сервера"))
 		return
 	}
@@ -49,7 +48,6 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	// получение строки токена
 	tokenString, customErr := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
 	if customErr.IsError {
-		fmt.Println("Ошибка в BuildJWTString")
 		fmt.Println(customErr.CustomErr.Error())
 		fmt.Println(customErr.Err)
 		http.Error(w, customErr.CustomErr.Error(), http.StatusInternalServerError)
