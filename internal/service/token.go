@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -25,6 +26,9 @@ func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password st
 	// получение пользователя из БД
 	user, err := as.st.LoadUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return "", customerrors.New(err, customerrors.DBInvalidLoginPassword401)
+		}
 		return "", customerrors.New(err, customerrors.InternalServerError500)
 	}
 

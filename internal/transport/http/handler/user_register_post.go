@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
@@ -16,41 +15,40 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	switch contentType {
 	case "application/json":
 	default:
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf("Ошибка %v: %v. Требуется: application/json. Получено: %v", http.StatusBadRequest, string(customerrors.InvalidContentType400), contentType)))
+		http.Error(w, string(customerrors.InvalidContentType400), http.StatusBadRequest)
 		return
 	}
 
-	// десериализация JSON (user.Login, user.Password)
+	// десериализация JSON в user (user.Login, user.Password)
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("Ошибка %v: %v, %v", http.StatusInternalServerError, string(customerrors.ErrorDecodeJSON500), err.Error())))
+		http.Error(w, string(customerrors.DecodeJSONError500), http.StatusInternalServerError)
 		return
 	}
 
-	// запуск сервиса CreateUser, проверка ошибок
-	// TODO: Обработать кастомные ошибки
-	userID, err := hd.sv.AuthServiceInt.CreateUser(r.Context(), user)
-	if err != nil {
-		// если логин уже существует в БД
-		if strings.Contains(err.Error(), "Unique") {
-			w.WriteHeader(http.StatusConflict)
-			w.Write([]byte("Логин уже занят"))
+	// запуск сервиса CreateUser, получение userID нового пользователя для последующей авторизации, проверка ошибок
+	userID, customErr := hd.sv.AuthServiceInt.CreateUser(r.Context(), user)
+	if customErr.IsError {
+		switch customErr.CustomErr {
+		case customerrors.DBBusyLogin409:
+			// если логин уже существует в БД
+			http.Error(w, customErr.AllErr.Error(), http.StatusConflict)
+			return
+			// прочие ошибки
+		case customerrors.DBError500:
+			http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Write([]byte("Внутренняя ошибка сервера"))
-		return
 	}
+
+	// сохранение userID в user, если не было ошибок (user.UserID)
 	user.UserID = userID
 
+	// авторизация
 	// получение строки токена
 	tokenString, customErr := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
 	if customErr.IsError {
-		fmt.Println(customErr.CustomErr.Error())
-		fmt.Println(customErr.Err)
-		http.Error(w, customErr.CustomErr.Error(), http.StatusInternalServerError)
+		http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
 		return
 	}
 

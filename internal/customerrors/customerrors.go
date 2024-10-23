@@ -1,23 +1,27 @@
 package customerrors
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type customErr string
 
 const (
-	Err400                 customErr = "неверный формат запроса"
-	Err401                 customErr = "неверная пара логин/пароль"
-	DBError500             customErr = "ошибка БД"
-	DBBusyLogin409         customErr = "ошибка БД: логин уже занят"
-	InternalServerError500 customErr = "внутренняя ошибка сервера"
-	InvalidContentType400  customErr = "неверный Content-Type"
-	DecodeJSONError500     customErr = "ошибка десериализации JSON"
+	Err400                    customErr = "неверный формат запроса"
+	DBInvalidLoginPassword401 customErr = "неверная пара логин/пароль"
+	DBError500                customErr = "ошибка БД"
+	DBBusyLogin409            customErr = "ошибка БД: логин уже занят"
+	InternalServerError500    customErr = "внутренняя ошибка сервера"
+	InvalidContentType400     customErr = "неверный Content-Type"
+	DecodeJSONError500        customErr = "ошибка десериализации JSON"
 )
 
 type CustomError struct {
 	IsError   bool
 	Err       error
-	CustomErr error
+	CustomErr customErr
+	AllErr    error
 }
 
 func New(err error, customErr customErr) CustomError {
@@ -28,7 +32,8 @@ func New(err error, customErr customErr) CustomError {
 	}
 
 	customError.Err = err
-	customError.CustomErr = errors.New(string(customErr))
+	customError.CustomErr = customErr
+	customError.AllErr = errors.New(fmt.Sprintf("ошибка: %v; %v", customErr, err))
 
 	return customError
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
 )
 
@@ -14,24 +15,28 @@ func (hd *handlerStr) userLogin(w http.ResponseWriter, r *http.Request) {
 	switch contentType {
 	case "application/json":
 	default:
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Неверный формат запроса"))
+		http.Error(w, string(customerrors.InvalidContentType400), http.StatusBadRequest)
 		return
 	}
 
 	// десериализация JSON
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Write([]byte("Внутренняя ошибка сервера"))
+		http.Error(w, string(customerrors.DecodeJSONError500), http.StatusInternalServerError)
 		return
 	}
 
 	// получение строки токена
 	tokenString, customErr := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
 	if customErr.IsError {
-		http.Error(w, customErr.CustomErr.Error(), http.StatusInternalServerError)
-		return
+		switch customErr.CustomErr {
+		case customerrors.DBInvalidLoginPassword401:
+			http.Error(w, customErr.AllErr.Error(), http.StatusUnauthorized)
+			return
+		case customerrors.InternalServerError500:
+			http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// отправка заголовков
