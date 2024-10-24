@@ -15,7 +15,7 @@ func (as *authServiceStr) CreateUser(ctx context.Context, user model.User) (int,
 	// запуск функции БД: сохранение нового пользователя
 	userID, err := as.st.SaveUser(ctx, user)
 	if err != nil {
-		if strings.Contains(err.Error(), "Unique") {
+		if strings.Contains(err.Error(), " 23505") {
 			return 0, customerrors.New(err, customerrors.DBBusyLogin409)
 		}
 		return 0, customerrors.New(err, customerrors.DBError500)

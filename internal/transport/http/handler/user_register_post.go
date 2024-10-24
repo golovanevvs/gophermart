@@ -53,8 +53,8 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// запись заголовков и ответа
-	w.Header().Set("Authorization", fmt.Sprint("Bearer", tokenString))
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Add("Authorization", fmt.Sprint("Bearer", tokenString))
+	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	res := fmt.Sprintf("Пользователь %v успешно зарегистрирован под номером %v", user.Login, user.UserID)
 	w.Write([]byte(res))

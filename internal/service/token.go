@@ -26,9 +26,11 @@ func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password st
 	// получение пользователя из БД
 	user, err := as.st.LoadUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
 	if err != nil {
+		// если неверная пара логин/пароль
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return "", customerrors.New(err, customerrors.DBInvalidLoginPassword401)
 		}
+		// если другая ошибка
 		return "", customerrors.New(err, customerrors.InternalServerError500)
 	}
 
@@ -53,6 +55,7 @@ func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
 	claims := &claims{}
 
 	// преобразование строки в токен
+	// TODO Добавить обработку кастомных ошибок
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("неверный метод подписи")
