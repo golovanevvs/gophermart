@@ -51,11 +51,10 @@ func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password st
 }
 
 // GetUserIDFromJWT возвращает userID из JWT
-func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
+func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, customerrors.CustomError) {
 	claims := &claims{}
 
 	// преобразование строки в токен
-	// TODO Добавить обработку кастомных ошибок
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("неверный метод подписи")
@@ -63,13 +62,13 @@ func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
 		return []byte(SecretKey), nil
 	})
 	if err != nil {
-		return -1, err
+		return -1, customerrors.New(err, customerrors.JWTParseError401)
 	}
 
 	// валидация токена
 	if !token.Valid {
-		return -1, errors.New("невалидный токен")
+		return -1, customerrors.New(errors.New("невалидный токен"), customerrors.JWTInvalidToken401)
 	}
 
-	return claims.UserID, nil
+	return claims.UserID, customerrors.New(nil, "")
 }

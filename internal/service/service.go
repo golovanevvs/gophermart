@@ -11,11 +11,11 @@ import (
 type AuthServiceInt interface {
 	CreateUser(ctx context.Context, user model.User) (int, customerrors.CustomError)
 	BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError)
-	GetUserIDFromJWT(tokenString string) (int, error)
+	GetUserIDFromJWT(tokenString string) (int, customerrors.CustomError)
 }
 
 type OrderServiceInt interface {
-	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, error)
+	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, customerrors.CustomError)
 }
 
 type authServiceStr struct {

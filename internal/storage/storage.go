@@ -13,6 +13,7 @@ type AllStorageInt interface {
 	LoadUserByLoginPasswordHash(ctx context.Context, login, password string) (model.User, error)
 	LoadPointsByUserID(ctx context.Context, userID int) (int, error)
 	SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error)
+	LoadUserIDByOrderNumber(ctx context.Context, orderNumber int) (int, error)
 }
 
 type StorageStrInt struct {

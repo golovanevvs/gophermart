@@ -39,7 +39,7 @@ func (ap *allPostgresStr) SaveUser(ctx context.Context, user model.User) (int, e
 	(login, password_hash)
 	VALUES
 	($1, $2)
-	RETURNING user_id
+	RETURNING user_id;
 	`, user.Login, user.PasswordHash)
 
 	var userID int
@@ -71,7 +71,7 @@ func (ap *allPostgresStr) LoadUserByLoginPasswordHash(ctx context.Context, login
 func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
 	SELECT points FROM account
-	WHERE user_id=$1
+	WHERE user_id=$1;
 	`, userID)
 
 	var points int
@@ -85,12 +85,11 @@ func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (i
 
 func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
-	INSERT INTO order
-		(order_number)
+	INSERT INTO ordertable
+		(order_number, user_id)
 	VALUES
-		($1)
-	WHERE user_id=$2
-	RETURNING order_id
+		($1, $2)
+	RETURNING order_id;
 	`, orderNumber, userID)
 
 	var orderID int
@@ -99,4 +98,19 @@ func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID in
 	}
 
 	return orderID, nil
+}
+
+func (ap *allPostgresStr) LoadUserIDByOrderNumber(ctx context.Context, orderNumber int) (int, error) {
+	row := ap.db.QueryRowContext(ctx, `
+	SELECT user_id FROM ordertable
+	WHERE order_number=$1;
+	`, orderNumber)
+
+	var userID int
+	err := row.Scan(&userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
 }

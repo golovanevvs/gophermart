@@ -8,13 +8,18 @@ import (
 type customErr string
 
 const (
-	Err400                    customErr = "неверный формат запроса"
-	DBInvalidLoginPassword401 customErr = "неверная пара логин/пароль"
-	DBError500                customErr = "ошибка БД"
-	DBBusyLogin409            customErr = "ошибка БД: логин уже занят"
-	InternalServerError500    customErr = "внутренняя ошибка сервера"
-	InvalidContentType400     customErr = "неверный Content-Type"
-	DecodeJSONError500        customErr = "ошибка десериализации JSON"
+	OrderAlredyUploadedThisUser200  customErr = "номер заказа уже был загружен этим пользователем"
+	InvalidRequest400               customErr = "неверный формат запроса"
+	InvalidContentType400           customErr = "неверный Content-Type"
+	DBInvalidLoginPassword401       customErr = "неверная пара логин/пароль"
+	JWTWrongSingingMethod401        customErr = "неверный метод подписи"
+	JWTParseError401                customErr = "ошибка при чтении JWT"
+	JWTInvalidToken401              customErr = "невалидный токен"
+	OrderAlredyUploadedOtherUser409 customErr = "номер заказа уже был загружен другим пользователем"
+	DBBusyLogin409                  customErr = "ошибка БД: логин уже занят"
+	DBError500                      customErr = "ошибка БД"
+	InternalServerError500          customErr = "внутренняя ошибка сервера"
+	DecodeJSONError500              customErr = "ошибка десериализации JSON"
 )
 
 type CustomError struct {

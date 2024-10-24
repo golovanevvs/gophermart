@@ -36,9 +36,9 @@ func (hd *handlerStr) authByJWT(next http.Handler) http.Handler {
 		}
 
 		// получение userID из JWT
-		userID, err := hd.sv.GetUserIDFromJWT(headerSplit[1])
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+		userID, customErr := hd.sv.GetUserIDFromJWT(headerSplit[1])
+		if customErr.IsError {
+			http.Error(w, customErr.AllErr.Error(), http.StatusUnauthorized)
 			return
 		}
 
