@@ -52,11 +52,22 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resMap := make(map[string]interface{})
+	resMap["Login"] = user.Login
+	resMap["userID"] = user.UserID
+	resMap["token"] = tokenString
+
+	res, err := json.Marshal(resMap)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// запись заголовков и ответа
 	w.Header().Add("Authorization", fmt.Sprint("Bearer", tokenString))
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	res := fmt.Sprintf("Пользователь %v успешно зарегистрирован под номером %v", user.Login, user.UserID)
+	//res := fmt.Sprintf("Пользователь %v успешно зарегистрирован под номером %v\n", user.Login, user.UserID)
 	w.Write([]byte(res))
-	w.Write([]byte(tokenString))
+	//w.Write([]byte(tokenString))
 }

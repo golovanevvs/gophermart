@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/golovanevvs/gophermart/internal/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -18,7 +19,20 @@ func NewPostgres(databaseURI string) (*sqlx.DB, error) {
 		return nil, err
 	}
 
+	// пингование БД
 	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	// удаление таблиц БД
+	err = dropTables(db)
+	if err != nil {
+		return nil, err
+	}
+
+	// создание таблиц БД
+	err = createTables(db)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +44,60 @@ func NewAllPostgres(db *sqlx.DB) *allPostgresStr {
 	return &allPostgresStr{
 		db: db,
 	}
+}
+
+func createTables(db *sqlx.DB) error {
+	// таймаут 5 секунд
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// создание таблицы account, если не существует
+	_, err := db.ExecContext(ctx, `
+	CREATE TABLE IF NOT EXISTS account (
+		user_id SERIAL PRIMARY KEY,
+		login VARCHAR(250) UNIQUE NOT NULL,
+		password_hash VARCHAR(250) NOT NULL,
+		points INT DEFAULT 0
+	);
+	`)
+	if err != nil {
+		return err
+	}
+
+	// создание таблицы orders, если не существует
+	_, err = db.ExecContext(ctx, `
+	CREATE TABLE IF NOT EXISTS orders (
+		order_id SERIAL PRIMARY KEY,
+		user_id INT NOT NULL,
+		order_number BIGINT UNIQUE,
+		accrual_points INT,
+		processed BOOLEAN,
+		accrual_date TIMESTAMPTZ,
+		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
+	);
+	`)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func dropTables(db *sqlx.DB) error {
+	// таймаут 5 секунд
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// удаление таблиц БД
+	_, err := db.ExecContext(ctx, `
+	DROP TABLE IF EXISTS orders;
+	DROP TABLE IF EXISTS account;
+	`)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ap *allPostgresStr) SaveUser(ctx context.Context, user model.User) (int, error) {
@@ -85,7 +153,7 @@ func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (i
 
 func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
-	INSERT INTO ordertable
+	INSERT INTO orders
 		(order_number, user_id)
 	VALUES
 		($1, $2)
@@ -102,7 +170,7 @@ func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID in
 
 func (ap *allPostgresStr) LoadUserIDByOrderNumber(ctx context.Context, orderNumber int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
-	SELECT user_id FROM ordertable
+	SELECT user_id FROM orders
 	WHERE order_number=$1;
 	`, orderNumber)
 
