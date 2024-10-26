@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -52,8 +52,18 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// формирование ответа
+	resMap := make(map[string]interface{})
+	resMap["userID"] = userID
+	resMap["orderID"] = orderID
+	resMap["orderNumber"] = orderNumber
+
+	res, err := json.MarshalIndent(resMap, "", " ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	//запись заголовков и ответа
 	w.WriteHeader(http.StatusAccepted)
-
-	w.Write([]byte(fmt.Sprintf("Заказ от пользователя с userID %v принят под номером %v", userID, orderID)))
+	w.Write(res)
 }

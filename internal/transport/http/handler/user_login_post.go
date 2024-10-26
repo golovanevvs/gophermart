@@ -39,7 +39,20 @@ func (hd *handlerStr) userLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// формирование ответа
+	resMap := make(map[string]interface{})
+	resMap["Login"] = user.Login
+	resMap["userID"] = user.UserID
+	resMap["token"] = tokenString
+
+	res, err := json.MarshalIndent(resMap, "", " ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// отправка заголовков
 	w.Header().Set("Authorization", fmt.Sprint("Bearer", tokenString))
 	w.WriteHeader(http.StatusOK)
+	w.Write(res)
 }
