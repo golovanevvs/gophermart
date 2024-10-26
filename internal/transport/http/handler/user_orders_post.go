@@ -32,7 +32,8 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	// получение номера заказа
 	orderNumber, err := strconv.Atoi(string(body))
 	if err != nil {
-		http.Error(w, string(customerrors.InvalidRequest400), http.StatusBadRequest)
+		//
+		http.Error(w, string(customerrors.InvalidOrderNumber422), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -41,7 +42,7 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	if customErr.IsError {
 		switch customErr.CustomErr {
 		// номер заказа не соответствует алгоритму Луна
-		case customerrors.LuhnInvalid422:
+		case customerrors.InvalidOrderNumber422:
 			http.Error(w, customErr.AllErr.Error(), http.StatusUnprocessableEntity)
 		// номер заказа уже был загружен этим пользователем
 		case customerrors.OrderAlredyUploadedThisUser200:

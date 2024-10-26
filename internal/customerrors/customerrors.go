@@ -17,7 +17,7 @@ const (
 	JWTInvalidToken401              customErr = "невалидный токен"
 	OrderAlredyUploadedOtherUser409 customErr = "номер заказа уже был загружен другим пользователем"
 	DBBusyLogin409                  customErr = "ошибка БД: логин уже занят"
-	LuhnInvalid422                  customErr = "Неверный формат номера заказа"
+	InvalidOrderNumber422           customErr = "Неверный формат номера заказа"
 	DBError500                      customErr = "ошибка БД"
 	InternalServerError500          customErr = "внутренняя ошибка сервера"
 	DecodeJSONError500              customErr = "ошибка десериализации JSON"

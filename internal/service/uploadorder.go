@@ -12,7 +12,7 @@ import (
 func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNumber int) (int, customerrors.CustomError) {
 	// проверка номера заказа алгоритмом Луна
 	if err := checkOrderNumberByLuhn(orderNumber); err != nil {
-		return 0, customerrors.New(err, customerrors.LuhnInvalid422)
+		return 0, customerrors.New(err, customerrors.InvalidOrderNumber422)
 	}
 
 	orderID, err := os.st.SaveOrderNumberByUserID(ctx, userID, orderNumber)
