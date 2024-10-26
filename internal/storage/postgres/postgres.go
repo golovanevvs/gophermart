@@ -68,11 +68,11 @@ func createTables(db *sqlx.DB) error {
 	_, err = db.ExecContext(ctx, `
 	CREATE TABLE IF NOT EXISTS orders (
 		order_id SERIAL PRIMARY KEY,
-		user_id SERIAL NOT NULL,
 		order_number BIGINT UNIQUE,
 		accrual_points INT,
 		processed BOOLEAN,
 		accrual_date TIMESTAMPTZ,
+		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
 	`)

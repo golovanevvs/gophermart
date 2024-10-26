@@ -40,12 +40,18 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	orderID, customErr := hd.sv.UploadOrder(r.Context(), userID, orderNumber)
 	if customErr.IsError {
 		switch customErr.CustomErr {
+		// номер заказа не соответствует алгоритму Луна
+		case customerrors.LuhnInvalid422:
+			http.Error(w, customErr.AllErr.Error(), http.StatusUnprocessableEntity)
+		// номер заказа уже был загружен этим пользователем
 		case customerrors.OrderAlredyUploadedThisUser200:
 			http.Error(w, customErr.AllErr.Error(), http.StatusOK)
 			return
+		// номер заказа уже был загружен другим пользователем
 		case customerrors.OrderAlredyUploadedOtherUser409:
 			http.Error(w, customErr.AllErr.Error(), http.StatusConflict)
 			return
+		// внутренняя ошибка сервера
 		case customerrors.DBError500:
 			http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
 			return
