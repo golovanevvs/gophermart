@@ -69,9 +69,10 @@ func createTables(db *sqlx.DB) error {
 	CREATE TABLE IF NOT EXISTS orders (
 		order_id SERIAL PRIMARY KEY,
 		order_number BIGINT UNIQUE,
+		order_status VARCHAR(250) NOT NULL,
+		uploaded_at TIMESTAMPTZ,
 		accrual_points INT,
-		processed BOOLEAN,
-		accrual_date TIMESTAMPTZ,
+		accrual_at TIMESTAMPTZ,
 		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
@@ -154,9 +155,9 @@ func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (i
 func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
 	INSERT INTO orders
-		(order_number, user_id)
+		(order_number, user_id, order_status, uploaded_at)
 	VALUES
-		($1, $2)
+		($1, $2, 'NEW', NOW())
 	RETURNING order_id;
 	`, orderNumber, userID)
 
@@ -181,4 +182,38 @@ func (ap *allPostgresStr) LoadUserIDByOrderNumber(ctx context.Context, orderNumb
 	}
 
 	return userID, nil
+}
+
+func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]model.Order, error) {
+	orders := make([]model.Order, 0)
+
+	rows, err := ap.db.QueryContext(ctx, `
+	SELECT
+	order_id, order_number, order_status, uploaded_at
+	FROM orders
+	WHERE user_id = $1
+	ORDER BY uploaded_at DESC;
+	`, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var order model.Order
+		err = rows.Scan(&order.OrderID, &order.OrderNumber, &order.OrderStatus, &order.UploadedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		orders = append(orders, order)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
 }

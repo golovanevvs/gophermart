@@ -1,5 +1,10 @@
 package model
 
+import "time"
+
 type Order struct {
-	ID int
+	OrderID     int
+	OrderNumber int
+	OrderStatus string
+	UploadedAt  time.Time
 }
