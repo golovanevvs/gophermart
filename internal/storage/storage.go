@@ -14,6 +14,7 @@ type AllStorageInt interface {
 	LoadPointsByUserID(ctx context.Context, userID int) (int, error)
 	SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error)
 	LoadUserIDByOrderNumber(ctx context.Context, orderNumber int) (int, error)
+	LoadOrderByUserID(ctx context.Context, userID int) ([]model.Order, error)
 }
 
 type StorageStrInt struct {

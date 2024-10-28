@@ -3,8 +3,8 @@ package model
 import "time"
 
 type Order struct {
-	OrderID     int
-	OrderNumber int
-	OrderStatus string
-	UploadedAt  time.Time
+	OrderID     int       `json:"-"`
+	OrderNumber int       `json:"number"`
+	OrderStatus string    `json:"status"`
+	UploadedAt  time.Time `json:"uploaded_at"`
 }

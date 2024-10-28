@@ -9,6 +9,7 @@ type customErr string
 
 const (
 	OrderAlredyUploadedThisUser200  customErr = "номер заказа уже был загружен этим пользователем"
+	EmptyOrder204                   customErr = "нет данных для ответа"
 	InvalidRequest400               customErr = "неверный формат запроса"
 	InvalidContentType400           customErr = "неверный Content-Type"
 	DBInvalidLoginPassword401       customErr = "неверная пара логин/пароль"
