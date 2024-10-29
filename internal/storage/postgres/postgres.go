@@ -57,7 +57,6 @@ func createTables(db *sqlx.DB) error {
 		user_id SERIAL PRIMARY KEY,
 		login VARCHAR(250) UNIQUE NOT NULL,
 		password_hash VARCHAR(250) NOT NULL,
-		points INT DEFAULT 0
 	);
 	`)
 	if err != nil {
@@ -71,8 +70,6 @@ func createTables(db *sqlx.DB) error {
 		order_number BIGINT UNIQUE,
 		order_status VARCHAR(250) NOT NULL,
 		uploaded_at TIMESTAMPTZ,
-		accrual_points INT,
-		accrual_at TIMESTAMPTZ,
 		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
@@ -80,6 +77,30 @@ func createTables(db *sqlx.DB) error {
 	if err != nil {
 		return err
 	}
+
+	// создание таблицы balance, если не существует
+	_, err = db.ExecContext(ctx, `
+	CREATE TABLE IF NOT EXISTS balance (
+		current_points INT DEFAULT 0,
+		withdrawn INT DEFAULT 0,
+		user_id INT,
+		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
+	);
+	`)
+	if err != nil {
+		return err
+	}
+
+	// создание таблицы accrual, если не существует
+	_, err = db.ExecContext(ctx, `
+	CREATE TABLE IF NOT EXISTS accrual (
+		accrual_points INT,
+		accrual_at TIMESTAMPTZ,
+		order_id INT,
+		user_id INT,
+		FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+	);
+	`)
 
 	return nil
 }
@@ -91,6 +112,8 @@ func dropTables(db *sqlx.DB) error {
 
 	// удаление таблиц БД
 	_, err := db.ExecContext(ctx, `
+	DROP TABLE IF EXISTS accrual;
+	DROP TABLE IF EXISTS balance;
 	DROP TABLE IF EXISTS orders;
 	DROP TABLE IF EXISTS account;
 	`)
@@ -137,20 +160,20 @@ func (ap *allPostgresStr) LoadUserByLoginPasswordHash(ctx context.Context, login
 	return user, nil
 }
 
-func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (int, error) {
-	row := ap.db.QueryRowContext(ctx, `
-	SELECT points FROM account
-	WHERE user_id=$1;
-	`, userID)
+// func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (int, error) {
+// 	row := ap.db.QueryRowContext(ctx, `
+// 	SELECT points FROM account
+// 	WHERE user_id=$1;
+// 	`, userID)
 
-	var points int
-	err := row.Scan(&points)
-	if err != nil {
-		return 0, err
-	}
+// 	var points int
+// 	err := row.Scan(&points)
+// 	if err != nil {
+// 		return 0, err
+// 	}
 
-	return points, nil
-}
+// 	return points, nil
+// }
 
 func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
@@ -216,4 +239,25 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 	}
 
 	return orders, nil
+}
+
+func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (model.Balance, error) {
+	row := ap.db.QueryRowContext(ctx, `
+	SELECT current_points, withdrawn FROM balance
+	WHERE user_id=$1;
+	`, userID)
+
+	var currentPoints, withdrawn int
+
+	err := row.Scan(&currentPoints, withdrawn)
+	if err != nil {
+		return model.Balance{}, err
+	}
+
+	balance := model.Balance{
+		CurrentPoints: currentPoints,
+		Withdrawn:     withdrawn,
+	}
+
+	return balance, nil
 }

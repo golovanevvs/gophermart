@@ -12,6 +12,7 @@ type AuthServiceInt interface {
 	CreateUser(ctx context.Context, user model.User) (int, customerrors.CustomError)
 	BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError)
 	GetUserIDFromJWT(tokenString string) (int, customerrors.CustomError)
+	GetBalance(ctx context.Context, userID int) (model.Balance, error)
 }
 
 type OrderServiceInt interface {
