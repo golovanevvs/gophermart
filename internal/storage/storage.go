@@ -11,11 +11,11 @@ import (
 type AllStorageInt interface {
 	SaveUser(ctx context.Context, user model.User) (int, error)
 	LoadUserByLoginPasswordHash(ctx context.Context, login, password string) (model.User, error)
-	//LoadPointsByUserID(ctx context.Context, userID int) (int, error)
 	SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error)
 	LoadUserIDByOrderNumber(ctx context.Context, orderNumber int) (int, error)
 	LoadOrderByUserID(ctx context.Context, userID int) ([]model.Order, error)
 	LoadBalanceByUserID(ctx context.Context, userID int) (model.Balance, error)
+	LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error)
 }
 
 type StorageStrInt struct {

@@ -56,7 +56,7 @@ func createTables(db *sqlx.DB) error {
 	CREATE TABLE IF NOT EXISTS account (
 		user_id SERIAL PRIMARY KEY,
 		login VARCHAR(250) UNIQUE NOT NULL,
-		password_hash VARCHAR(250) NOT NULL,
+		password_hash VARCHAR(250) NOT NULL
 	);
 	`)
 	if err != nil {
@@ -99,6 +99,7 @@ func createTables(db *sqlx.DB) error {
 		order_id INT,
 		user_id INT,
 		FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
 	`)
 
@@ -249,7 +250,7 @@ func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (
 
 	var currentPoints, withdrawn int
 
-	err := row.Scan(&currentPoints, withdrawn)
+	err := row.Scan(&currentPoints, &withdrawn)
 	if err != nil {
 		return model.Balance{}, err
 	}
@@ -260,4 +261,20 @@ func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (
 	}
 
 	return balance, nil
+}
+
+func (ap *allPostgresStr) LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error) {
+	row := ap.db.QueryRowContext(ctx, `
+	SELECT current_balance FROM balance
+	WHERE user_id=$1;
+	`, userID)
+
+	var currentPoints int
+
+	err := row.Scan(&currentPoints)
+	if err != nil {
+		return 0, err
+	}
+
+	return currentPoints, nil
 }

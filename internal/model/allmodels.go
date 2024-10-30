@@ -25,3 +25,10 @@ type Accrual struct {
 	AccrualPoints int
 	AccrualAt     time.Time
 }
+
+type WithdrawOrder struct {
+	OrderID     int    `json:"-"`
+	OrderNumber string `json:"order"`
+	Sum         int
+	WithdrawAt  time.Time `json:"-"`
+}
