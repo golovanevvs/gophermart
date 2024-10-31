@@ -26,10 +26,10 @@ func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNum
 			}
 			if newUserID == userID {
 				// если номер заказа принадлежит текущему пользователю
-				return 0, fmt.Errorf("%v: %v", customerrors.OrderAlredyUploadedThisUser200, err.Error())
+				return 0, fmt.Errorf("%v", customerrors.OrderAlredyUploadedThisUser200)
 			} else {
 				// если номер заказа принадлежит другому пользователю
-				return 0, fmt.Errorf("%v: %v", customerrors.OrderAlredyUploadedOtherUser409, err.Error())
+				return 0, fmt.Errorf("%v", customerrors.OrderAlredyUploadedOtherUser409)
 			}
 		}
 		// если возникла другая ошибка
