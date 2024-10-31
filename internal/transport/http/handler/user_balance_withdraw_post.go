@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
@@ -24,27 +25,27 @@ func (hd *handlerStr) withDraw(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(UserIDContextKey).(int)
 
 	// десериализация JSON в model.WithdrawOrder
-	var withdrawOrder model.WithdrawOrder
+	var withdrawOrder model.Withdrawals
 	if err := json.NewDecoder(r.Body).Decode(&withdrawOrder); err != nil {
 		http.Error(w, string(customerrors.DecodeJSONError500), http.StatusInternalServerError)
 		return
 	}
 
 	// запуск сервиса и обработка ошибок
-	customError := hd.sv.Withdraw(r.Context(), userID, withdrawOrder.OrderNumber, withdrawOrder.Sum)
-	if customError.IsError {
-		switch customError.CustomErr {
-		case customerrors.InvalidOrderNumberNotInt422:
-			http.Error(w, customError.AllErr.Error(), http.StatusUnprocessableEntity)
+	err := hd.sv.Withdraw(r.Context(), userID, withdrawOrder.OrderNumber, withdrawOrder.Sum)
+	if err != nil {
+		switch {
+		case strings.Contains(err.Error(), customerrors.InvalidOrderNumberNotInt422):
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 			return
-		case customerrors.InvalidOrderNumber422:
-			http.Error(w, customError.AllErr.Error(), http.StatusUnprocessableEntity)
+		case strings.Contains(err.Error(), customerrors.InvalidOrderNumber422):
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 			return
-		case customerrors.DBError500:
-			http.Error(w, customError.AllErr.Error(), http.StatusInternalServerError)
+		case strings.Contains(err.Error(), customerrors.DBError500):
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
-		case customerrors.NotEnoughPoints402:
-			http.Error(w, customError.AllErr.Error(), http.StatusPaymentRequired)
+		case strings.Contains(err.Error(), customerrors.NotEnoughPoints402):
+			http.Error(w, err.Error(), http.StatusPaymentRequired)
 			return
 		}
 	}

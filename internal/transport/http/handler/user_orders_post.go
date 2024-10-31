@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 )
@@ -38,23 +39,23 @@ func (hd *handlerStr) userUploadOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// запуск сервиса и обработка ошибок
-	orderID, customErr := hd.sv.UploadOrder(r.Context(), userID, orderNumber)
-	if customErr.IsError {
-		switch customErr.CustomErr {
+	orderID, err := hd.sv.UploadOrder(r.Context(), userID, orderNumber)
+	if err != nil {
+		switch {
 		// номер заказа не соответствует алгоритму Луна
-		case customerrors.InvalidOrderNumber422:
-			http.Error(w, customErr.AllErr.Error(), http.StatusUnprocessableEntity)
+		case strings.Contains(err.Error(), customerrors.InvalidOrderNumber422):
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		// номер заказа уже был загружен этим пользователем
-		case customerrors.OrderAlredyUploadedThisUser200:
-			http.Error(w, customErr.AllErr.Error(), http.StatusOK)
+		case strings.Contains(err.Error(), customerrors.OrderAlredyUploadedThisUser200):
+			http.Error(w, err.Error(), http.StatusOK)
 			return
 		// номер заказа уже был загружен другим пользователем
-		case customerrors.OrderAlredyUploadedOtherUser409:
-			http.Error(w, customErr.AllErr.Error(), http.StatusConflict)
+		case strings.Contains(err.Error(), customerrors.OrderAlredyUploadedOtherUser409):
+			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		// внутренняя ошибка сервера
-		case customerrors.DBError500:
-			http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
+		case strings.Contains(err.Error(), customerrors.DBError500):
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

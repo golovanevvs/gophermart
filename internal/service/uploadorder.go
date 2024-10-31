@@ -2,15 +2,16 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 )
 
-func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNumber int) (int, customerrors.CustomError) {
+func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNumber int) (int, error) {
 	// проверка номера заказа алгоритмом Луна
 	if err := checkOrderNumberByLuhn(orderNumber); err != nil {
-		return 0, customerrors.New(err, customerrors.InvalidOrderNumber422)
+		return 0, fmt.Errorf("%v: %v", customerrors.InvalidOrderNumber422, err.Error())
 	}
 
 	orderID, err := os.st.SaveOrderNumberByUserID(ctx, userID, orderNumber)
@@ -21,19 +22,19 @@ func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNum
 			newUserID, err := os.st.LoadUserIDByOrderNumber(ctx, orderNumber)
 			// если возникла непредвиденная ошибка
 			if err != nil {
-				return 0, customerrors.New(err, customerrors.DBError500)
+				return 0, fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 			}
 			if newUserID == userID {
 				// если номер заказа принадлежит текущему пользователю
-				return 0, customerrors.New(err, customerrors.OrderAlredyUploadedThisUser200)
+				return 0, fmt.Errorf("%v: %v", customerrors.OrderAlredyUploadedThisUser200, err.Error())
 			} else {
 				// если номер заказа принадлежит другому пользователю
-				return 0, customerrors.New(err, customerrors.OrderAlredyUploadedOtherUser409)
+				return 0, fmt.Errorf("%v: %v", customerrors.OrderAlredyUploadedOtherUser409, err.Error())
 			}
 		}
 		// если возникла другая ошибка
-		return 0, customerrors.New(err, customerrors.DBError500)
+		return 0, fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 	}
 
-	return orderID, customerrors.New(nil, "")
+	return orderID, nil
 }

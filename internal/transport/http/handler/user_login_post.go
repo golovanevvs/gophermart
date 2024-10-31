@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
@@ -27,14 +28,14 @@ func (hd *handlerStr) userLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// получение строки токена
-	tokenString, customErr := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
-	if customErr.IsError {
-		switch customErr.CustomErr {
-		case customerrors.DBInvalidLoginPassword401:
-			http.Error(w, customErr.AllErr.Error(), http.StatusUnauthorized)
+	tokenString, err := hd.sv.BuildJWTString(r.Context(), user.Login, user.Password)
+	if err != nil {
+		switch {
+		case strings.Contains(err.Error(), customerrors.DBInvalidLoginPassword401):
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
-		case customerrors.InternalServerError500:
-			http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
+		case strings.Contains(err.Error(), customerrors.InternalServerError500):
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -42,7 +43,7 @@ func (hd *handlerStr) userLogin(w http.ResponseWriter, r *http.Request) {
 	// формирование ответа
 	resMap := make(map[string]interface{})
 	resMap["Login"] = user.Login
-	resMap["userID"] = user.UserID
+	resMap["userID"] = user.ID
 	resMap["token"] = tokenString
 	res, err := json.MarshalIndent(resMap, "", " ")
 	if err != nil {

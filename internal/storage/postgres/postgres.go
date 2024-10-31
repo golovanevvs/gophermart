@@ -151,7 +151,7 @@ func (ap *allPostgresStr) LoadUserByLoginPasswordHash(ctx context.Context, login
 
 	var user model.User
 
-	err := row.Scan(&user.UserID)
+	err := row.Scan(&user.ID)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -227,7 +227,7 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 
 	for rows.Next() {
 		var order model.Order
-		err = rows.Scan(&order.OrderID, &order.OrderNumber, &order.OrderStatus, &order.UploadedAt)
+		err = rows.Scan(&order.ID, &order.Number, &order.Status, &order.UploadedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -256,8 +256,8 @@ func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (
 	}
 
 	balance := model.Balance{
-		CurrentPoints: currentPoints,
-		Withdrawn:     withdrawn,
+		Current:   currentPoints,
+		Withdrawn: withdrawn,
 	}
 
 	return balance, nil

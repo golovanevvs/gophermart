@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 )
@@ -15,16 +16,16 @@ func (hd *handlerStr) getOrders(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(UserIDContextKey).(int)
 
 	// запуск сервиса и обработка ошибок
-	orders, customErr := hd.sv.GetOrders(r.Context(), userID)
-	if customErr.IsError {
-		switch customErr.CustomErr {
+	orders, err := hd.sv.GetOrders(r.Context(), userID)
+	if err != nil {
+		switch {
 		// если нет загруженных заказов
-		case customerrors.EmptyOrder204:
-			http.Error(w, customErr.AllErr.Error(), http.StatusNoContent)
+		case strings.Contains(err.Error(), customerrors.EmptyOrder204):
+			http.Error(w, err.Error(), http.StatusNoContent)
 			return
 		// прочие ошибки
-		case customerrors.DBError500:
-			http.Error(w, customErr.AllErr.Error(), http.StatusInternalServerError)
+		case strings.Contains(err.Error(), customerrors.DBError500):
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

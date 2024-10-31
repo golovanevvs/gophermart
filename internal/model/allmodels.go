@@ -3,31 +3,32 @@ package model
 import "time"
 
 type User struct {
-	UserID       int `json:"-" db:"user_id"`
+	ID           int `json:"-"`
 	Login        string
 	Password     string
-	PasswordHash string `json:"-" db:"password_hash"`
+	PasswordHash string `json:"-"`
 }
 
 type Order struct {
-	OrderID     int       `json:"-" db:"order_id`
-	OrderNumber int       `json:"number" db:"order_number"`
-	OrderStatus string    `json:"status"`
-	UploadedAt  time.Time `json:"uploaded_at" db:"uploaded_at`
+	ID         int `json:"-"`
+	Number     int
+	Status     string
+	UploadedAt time.Time `json:"uploaded_at"`
 }
 
 type Balance struct {
-	CurrentPoints int `json:"current" db:"current_points"`
-	Withdrawn     int
+	Current   int
+	Withdrawn int
 }
 
 type Accrual struct {
+	ID            int
 	AccrualPoints int
 	AccrualAt     time.Time
 }
 
-type WithdrawOrder struct {
-	OrderID     int    `json:"-"`
+type Withdrawals struct {
+	ID          int    `json:"-"`
 	OrderNumber string `json:"order"`
 	Sum         int
 	WithdrawAt  time.Time `json:"-"`

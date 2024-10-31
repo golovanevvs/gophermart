@@ -3,22 +3,21 @@ package service
 import (
 	"context"
 
-	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
 	"github.com/golovanevvs/gophermart/internal/storage"
 )
 
 type AuthServiceInt interface {
-	CreateUser(ctx context.Context, user model.User) (int, customerrors.CustomError)
-	BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError)
-	GetUserIDFromJWT(tokenString string) (int, customerrors.CustomError)
+	CreateUser(ctx context.Context, user model.User) (int, error)
+	BuildJWTString(ctx context.Context, login, password string) (string, error)
+	GetUserIDFromJWT(tokenString string) (int, error)
 	GetBalance(ctx context.Context, userID int) (model.Balance, error)
 }
 
 type OrderServiceInt interface {
-	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, customerrors.CustomError)
-	GetOrders(ctx context.Context, userID int) ([]model.Order, customerrors.CustomError)
-	Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum int) customerrors.CustomError
+	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, error)
+	GetOrders(ctx context.Context, userID int) ([]model.Order, error)
+	Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum int) error
 }
 
 type authServiceStr struct {
