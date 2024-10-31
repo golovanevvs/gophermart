@@ -18,6 +18,7 @@ type OrderServiceInt interface {
 	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, error)
 	GetOrders(ctx context.Context, userID int) ([]model.Order, error)
 	Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum int) error
+	Withdrawals(ctx context.Context, userID int) ([]model.Withdrawals, error)
 }
 
 type authServiceStr struct {
