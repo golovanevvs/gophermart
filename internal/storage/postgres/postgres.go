@@ -103,6 +103,18 @@ func createTables(db *sqlx.DB) error {
 	);
 	`)
 
+	// создание таблицы withdrawals, если не существует
+	_, err = db.ExecContext(ctx, `
+	CREATE TABLE IF NOT EXISTS withdrawals (
+		withdrawals_id SERIAL PRIMARY KEY,
+		order INT,
+		sum INT,
+		processed_at TIMESTAPTZ,
+		user_id INT,
+		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
+	);
+	`)
+
 	return nil
 }
 
@@ -113,6 +125,7 @@ func dropTables(db *sqlx.DB) error {
 
 	// удаление таблиц БД
 	_, err := db.ExecContext(ctx, `
+	DROP TABLE IF EXISTS withdrawals;
 	DROP TABLE IF EXISTS accrual;
 	DROP TABLE IF EXISTS balance;
 	DROP TABLE IF EXISTS orders;
@@ -160,21 +173,6 @@ func (ap *allPostgresStr) LoadUserByLoginPasswordHash(ctx context.Context, login
 
 	return user, nil
 }
-
-// func (ap *allPostgresStr) LoadPointsByUserID(ctx context.Context, userID int) (int, error) {
-// 	row := ap.db.QueryRowContext(ctx, `
-// 	SELECT points FROM account
-// 	WHERE user_id=$1;
-// 	`, userID)
-
-// 	var points int
-// 	err := row.Scan(&points)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-
-// 	return points, nil
-// }
 
 func (ap *allPostgresStr) SaveOrderNumberByUserID(ctx context.Context, userID int, orderNumber int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
@@ -277,4 +275,34 @@ func (ap *allPostgresStr) LoadCurrentPointsByUserID(ctx context.Context, userID 
 	}
 
 	return currentPoints, nil
+}
+
+func (ap *allPostgresStr) LoadWithdrawalsByUserID(ctx context.Context, userID int) ([]model.Withdrawals, error) {
+	withdrawals := make([]model.Withdrawals, 0)
+
+	rows, err := ap.db.QueryContext(ctx, `
+	SELECT order, sum, processed_at FROM withdrawals
+	WHERE user_id=$1;
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var withdrawn model.Withdrawals
+		err := rows.Scan(&withdrawn.OrderNumber, &withdrawn.Sum, &withdrawn.WithdrawAt)
+		if err != nil {
+			return nil, err
+		}
+
+		withdrawals = append(withdrawals, withdrawn)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return withdrawals, nil
 }

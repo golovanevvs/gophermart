@@ -16,6 +16,7 @@ type AllStorageInt interface {
 	LoadOrderByUserID(ctx context.Context, userID int) ([]model.Order, error)
 	LoadBalanceByUserID(ctx context.Context, userID int) (model.Balance, error)
 	LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error)
+	LoadWithdrawalsByUserID(ctx context.Context, userID int) ([]model.Withdrawals, error)
 }
 
 type StorageStrInt struct {
