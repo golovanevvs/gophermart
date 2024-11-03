@@ -17,6 +17,7 @@ type AllStorageInt interface {
 	LoadBalanceByUserID(ctx context.Context, userID int) (model.Balance, error)
 	LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error)
 	LoadWithdrawalsByUserID(ctx context.Context, userID int) ([]model.Withdrawals, error)
+	SaveAccrualStatusByOrderNumber(ctx context.Context, accrualSystem model.AccrualSystem) error
 }
 
 type StorageStrInt struct {

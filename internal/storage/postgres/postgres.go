@@ -70,6 +70,7 @@ func createTables(db *sqlx.DB) error {
 		order_number BIGINT UNIQUE,
 		order_status VARCHAR(250) NOT NULL,
 		uploaded_at TIMESTAMPTZ,
+		accrual INT,
 		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
@@ -91,23 +92,11 @@ func createTables(db *sqlx.DB) error {
 		return err
 	}
 
-	// создание таблицы accrual, если не существует
-	_, err = db.ExecContext(ctx, `
-	CREATE TABLE IF NOT EXISTS accrual (
-		accrual_points INT,
-		accrual_at TIMESTAMPTZ,
-		order_id INT,
-		user_id INT,
-		FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
-		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
-	);
-	`)
-
 	// создание таблицы withdrawals, если не существует
 	_, err = db.ExecContext(ctx, `
 	CREATE TABLE IF NOT EXISTS withdrawals (
 		withdrawals_id SERIAL PRIMARY KEY,
-		order INT,
+		new_order INT,
 		sum INT,
 		processed_at TIMESTAPTZ,
 		user_id INT,
@@ -126,7 +115,6 @@ func dropTables(db *sqlx.DB) error {
 	// удаление таблиц БД
 	_, err := db.ExecContext(ctx, `
 	DROP TABLE IF EXISTS withdrawals;
-	DROP TABLE IF EXISTS accrual;
 	DROP TABLE IF EXISTS balance;
 	DROP TABLE IF EXISTS orders;
 	DROP TABLE IF EXISTS account;
@@ -281,7 +269,7 @@ func (ap *allPostgresStr) LoadWithdrawalsByUserID(ctx context.Context, userID in
 	withdrawals := make([]model.Withdrawals, 0)
 
 	rows, err := ap.db.QueryContext(ctx, `
-	SELECT order, sum, processed_at FROM withdrawals
+	SELECT new_order, sum, processed_at FROM withdrawals
 	WHERE user_id=$1;
 	`, userID)
 	if err != nil {
@@ -292,7 +280,7 @@ func (ap *allPostgresStr) LoadWithdrawalsByUserID(ctx context.Context, userID in
 
 	for rows.Next() {
 		var withdrawn model.Withdrawals
-		err := rows.Scan(&withdrawn.OrderNumber, &withdrawn.Sum, &withdrawn.WithdrawAt)
+		err := rows.Scan(&withdrawn.NewOrderNumber, &withdrawn.Sum, &withdrawn.ProcessedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -305,4 +293,17 @@ func (ap *allPostgresStr) LoadWithdrawalsByUserID(ctx context.Context, userID in
 	}
 
 	return withdrawals, nil
+}
+
+// TODO: доделать запрос
+func (ap *allPostgresStr) SaveAccrualStatusByOrderNumber(ctx context.Context, accrualSystem model.AccrualSystem) error {
+	_, err := ap.db.ExecContext(ctx, `
+	UPDATE orders SET
+		order_status = $1
+	WHERE order_number = $2;
+	`, accrualSystem.Status, accrualSystem.OrderNumber)
+	if err != nil {
+		return err
+	}
+	return nil
 }

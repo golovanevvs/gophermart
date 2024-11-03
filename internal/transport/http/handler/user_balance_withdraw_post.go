@@ -33,7 +33,7 @@ func (hd *handlerStr) withDraw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// запуск сервиса и обработка ошибок
-	err := hd.sv.Withdraw(r.Context(), userID, withdrawOrder.OrderNumber, withdrawOrder.Sum)
+	err := hd.sv.Withdraw(r.Context(), userID, withdrawOrder.NewOrderNumber, withdrawOrder.Sum)
 	if err != nil {
 		switch {
 		case strings.Contains(err.Error(), customerrors.InvalidOrderNumberNotInt422):

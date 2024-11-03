@@ -68,20 +68,23 @@ func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (
 			return model.AccrualSystem{}, fmt.Errorf("%v: %v; требуется text/plain", customerrors.InvalidContentType400, contentType)
 		}
 
+		// получение Retry-After
+		contentType := resp.Header.Get("Retry-After")
+		retryAfter, err := strconv.Atoi(string(contentType))
+		if err != nil {
+			return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.AtoiError500)
+		}
+
 		// чтение тела ответа
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.ResponseBodyError500)
 		}
-
-		// преобразование строки в число
-		retryAfter, err := strconv.Atoi(string(body))
-		if err != nil {
-			return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.AtoiError500)
-		}
+		message := string(body)
 
 		return model.AccrualSystem{
 			RetryAfter: retryAfter,
+			Message:    message,
 		}, fmt.Errorf("%v", customerrors.ASTooManyRequests429)
 
 	// если возникла внутренняя ошибка сервера

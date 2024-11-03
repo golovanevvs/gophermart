@@ -23,7 +23,7 @@ type OrderServiceInt interface {
 }
 
 type AccrualSystemServiceInt interface {
-	GetOrderFromAPIByOrderNumber(ctx context.Context, orderNumber int) (model.AccrualSystem, error)
+	GetOrderFromASByOrderNumber(ctx context.Context, orderNumber int) (accrualSystem model.AccrualSystem, err error)
 }
 
 type authServiceStr struct {

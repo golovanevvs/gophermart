@@ -13,6 +13,7 @@ type Order struct {
 	ID         int `json:"-"`
 	Number     int
 	Status     string
+	Accrual    int
 	UploadedAt time.Time `json:"uploaded_at"`
 }
 
@@ -21,22 +22,17 @@ type Balance struct {
 	Withdrawn int
 }
 
-type Accrual struct {
-	ID            int
-	AccrualPoints int
-	AccrualAt     time.Time
-}
-
 type Withdrawals struct {
-	ID          int    `json:"-"`
-	OrderNumber string `json:"order"`
-	Sum         int
-	WithdrawAt  time.Time `json:"-"`
+	ID             int    `json:"-"`
+	NewOrderNumber string `json:"order"`
+	Sum            int
+	ProcessedAt    time.Time `json:"processed_at"`
 }
 
 type AccrualSystem struct {
 	OrderNumber string `json:"order"`
 	Status      string
 	Accrual     int
-	RetryAfter  int `json:"-"`
+	RetryAfter  int    `json:"-"`
+	Message     string `json:"-"`
 }
