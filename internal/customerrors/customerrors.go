@@ -3,6 +3,8 @@ package customerrors
 const (
 	OrderAlredyUploadedThisUser200  = "номер заказа уже был загружен этим пользователем"
 	EmptyOrder204                   = "нет данных для ответа"
+	EmptyWithdrawals204             = "нет ни одного списания"
+	ASOrderNotRegistered204         = "заказ не зарегистрирован в системе расчёта"
 	InvalidRequest400               = "неверный формат запроса"
 	InvalidContentType400           = "неверный Content-Type"
 	DBInvalidLoginPassword401       = "неверная пара логин/пароль"
@@ -14,7 +16,12 @@ const (
 	DBBusyLogin409                  = "ошибка БД: логин уже занят"
 	InvalidOrderNumber422           = "Неверный формат номера заказа"
 	InvalidOrderNumberNotInt422     = "Неверный формат номера заказа: не соответствует типу int"
+	ASTooManyRequests429            = "превышено количество запросов к сервису"
 	DBError500                      = "ошибка БД"
 	InternalServerError500          = "внутренняя ошибка сервера"
 	DecodeJSONError500              = "ошибка десериализации JSON"
+	EncodeJSONError500              = "ошибка сериализации JSON"
+	ResponseBodyError500            = "ошибка при чтении тела ответа"
+	AtoiError500                    = "ошибка преобразования строки в число"
+	ClientError500                  = "ошибка при отправке запроса"
 )

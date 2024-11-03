@@ -5,6 +5,7 @@ import (
 
 	"github.com/golovanevvs/gophermart/internal/model"
 	"github.com/golovanevvs/gophermart/internal/storage"
+	"github.com/golovanevvs/gophermart/internal/transport/http/accrualsystem"
 )
 
 type AuthServiceInt interface {
@@ -21,6 +22,10 @@ type OrderServiceInt interface {
 	Withdrawals(ctx context.Context, userID int) ([]model.Withdrawals, error)
 }
 
+type AccrualSystemServiceInt interface {
+	GetOrderFromAPIByOrderNumber(ctx context.Context, orderNumber int) (model.AccrualSystem, error)
+}
+
 type authServiceStr struct {
 	st storage.AllStorageInt
 }
@@ -29,9 +34,15 @@ type orderServiceStr struct {
 	st storage.AllStorageInt
 }
 
+type accrualSystemServiceStr struct {
+	st storage.AllStorageInt
+	as accrualsystem.AccrualSystemInt
+}
+
 type ServiceStrInt struct {
 	AuthServiceInt
 	OrderServiceInt
+	AccrualSystemServiceInt
 }
 
 func NewAuthService(st storage.AllStorageInt) *authServiceStr {
@@ -46,9 +57,17 @@ func NewOrderService(st storage.AllStorageInt) *orderServiceStr {
 	}
 }
 
-func NewService(st *storage.StorageStrInt) *ServiceStrInt {
+func NewAccrualSystemService(st storage.AllStorageInt, as accrualsystem.AccrualSystemInt) *accrualSystemServiceStr {
+	return &accrualSystemServiceStr{
+		st: st,
+		as: as,
+	}
+}
+
+func NewService(st *storage.StorageStrInt, as accrualsystem.AccrualSystemInt) *ServiceStrInt {
 	return &ServiceStrInt{
-		AuthServiceInt:  NewAuthService(st),
-		OrderServiceInt: NewOrderService(st),
+		AuthServiceInt:          NewAuthService(st),
+		OrderServiceInt:         NewOrderService(st),
+		AccrualSystemServiceInt: NewAccrualSystemService(st, as),
 	}
 }

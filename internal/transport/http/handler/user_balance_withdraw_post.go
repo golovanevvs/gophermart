@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -27,7 +28,7 @@ func (hd *handlerStr) withDraw(w http.ResponseWriter, r *http.Request) {
 	// десериализация JSON в model.WithdrawOrder
 	var withdrawOrder model.Withdrawals
 	if err := json.NewDecoder(r.Body).Decode(&withdrawOrder); err != nil {
-		http.Error(w, string(customerrors.DecodeJSONError500), http.StatusInternalServerError)
+		http.Error(w, fmt.Errorf("%v: %v", customerrors.DecodeJSONError500, err).Error(), http.StatusInternalServerError)
 		return
 	}
 

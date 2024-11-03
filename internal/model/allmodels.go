@@ -33,3 +33,10 @@ type Withdrawals struct {
 	Sum         int
 	WithdrawAt  time.Time `json:"-"`
 }
+
+type AccrualSystem struct {
+	OrderNumber string `json:"order"`
+	Status      string
+	Accrual     int
+	RetryAfter  int `json:"-"`
+}

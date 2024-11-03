@@ -2,7 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/golovanevvs/gophermart/internal/customerrors"
 )
 
 func (hd *handlerStr) getBalance(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +22,7 @@ func (hd *handlerStr) getBalance(w http.ResponseWriter, r *http.Request) {
 	// формирование тела ответа
 	res, err := json.MarshalIndent(balance, "", " ")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Errorf("%v: %v", customerrors.EncodeJSONError500, err.Error()).Error(), http.StatusInternalServerError)
 		return
 	}
 

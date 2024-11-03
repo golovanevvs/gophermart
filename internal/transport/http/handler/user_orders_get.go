@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -33,7 +34,7 @@ func (hd *handlerStr) getOrders(w http.ResponseWriter, r *http.Request) {
 	// формирование тела ответа
 	res, err := json.MarshalIndent(orders, "", " ")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Errorf("%v: %v", customerrors.EncodeJSONError500, err.Error()).Error(), http.StatusInternalServerError)
 		return
 	}
 
