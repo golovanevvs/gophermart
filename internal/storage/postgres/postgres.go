@@ -56,7 +56,9 @@ func createTables(db *sqlx.DB) error {
 	CREATE TABLE IF NOT EXISTS account (
 		user_id SERIAL PRIMARY KEY,
 		login VARCHAR(250) UNIQUE NOT NULL,
-		password_hash VARCHAR(250) NOT NULL
+		password_hash VARCHAR(250) NOT NULL,
+		current_points INT DEFAULT 0,
+		withdrawn INT DEFAULT 0
 	);
 	`)
 	if err != nil {
@@ -72,19 +74,6 @@ func createTables(db *sqlx.DB) error {
 		uploaded_at TIMESTAMPTZ,
 		accrual INT,
 		user_id INT NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
-	);
-	`)
-	if err != nil {
-		return err
-	}
-
-	// создание таблицы balance, если не существует
-	_, err = db.ExecContext(ctx, `
-	CREATE TABLE IF NOT EXISTS balance (
-		current_points INT DEFAULT 0,
-		withdrawn INT DEFAULT 0,
-		user_id INT,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
 	`)
@@ -115,7 +104,6 @@ func dropTables(db *sqlx.DB) error {
 	// удаление таблиц БД
 	_, err := db.ExecContext(ctx, `
 	DROP TABLE IF EXISTS withdrawals;
-	DROP TABLE IF EXISTS balance;
 	DROP TABLE IF EXISTS orders;
 	DROP TABLE IF EXISTS account;
 	`)
@@ -230,7 +218,7 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 
 func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (model.Balance, error) {
 	row := ap.db.QueryRowContext(ctx, `
-	SELECT current_points, withdrawn FROM balance
+	SELECT current_points, withdrawn FROM account
 	WHERE user_id=$1;
 	`, userID)
 
@@ -251,7 +239,7 @@ func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (
 
 func (ap *allPostgresStr) LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error) {
 	row := ap.db.QueryRowContext(ctx, `
-	SELECT current_balance FROM balance
+	SELECT current_points FROM account
 	WHERE user_id=$1;
 	`, userID)
 
@@ -321,8 +309,8 @@ func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, accrualS
 
 func (ap *allPostgresStr) SaveNewPoints(ctx context.Context, userID int, newPoints int) error {
 	_, err := ap.db.ExecContext(ctx, `
-	UPDATE balance
-	SET current_points = $1,
+	UPDATE account
+	SET current_points = $1
 	WHERE user_id = $2;
 	`, newPoints, userID)
 	if err != nil {

@@ -27,13 +27,16 @@ func NewAccrualSystem(address string) *accrualSystemStr {
 }
 
 func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (model.AccrualSystem, error) {
-	fmt.Printf("Запуск GetAPIOrders\n")
 	// создание экземпляра клиента
 	client := &http.Client{}
 
 	// создание запроса, получение ответа
-	resp, err := client.Get(as.Address)
+
+	address := fmt.Sprintf("%v/api/orders/%v", as.Address, orderNumber)
+	fmt.Printf("адресс: %v\n", address)
+	resp, err := client.Get(address)
 	if err != nil {
+		fmt.Printf("Ошибка направления Get: %v\n", err.Error())
 		return model.AccrualSystem{}, fmt.Errorf("%v: %v", customerrors.ClientError500, err)
 	}
 
@@ -46,24 +49,32 @@ func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (
 	// успешная обработка запроса
 	case 200:
 		// проверка Content-Type
+		fmt.Printf("Статус 200\n")
 		if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
+			fmt.Printf("Ошибка Content-Type: нужен application/json, получен %v\n", contentType)
 			return model.AccrualSystem{}, fmt.Errorf("%v: %v; требуется application/json", customerrors.InvalidContentType400, contentType)
 		}
 
 		// десериализация тела ответа в структуру
+		fmt.Printf("Десериализация...\n")
 		var accruelSystem model.AccrualSystem
 		if err := json.NewDecoder(resp.Body).Decode(&accruelSystem); err != nil {
+			fmt.Printf("Ошибка десериализации: %v\n", err.Error())
 			return model.AccrualSystem{}, fmt.Errorf("%v: %v", customerrors.DecodeJSONError500, err)
 		}
+		fmt.Printf("Десериализация завершена\n")
+		fmt.Printf("accruelSystem: %v\n", accruelSystem)
 
 		return accruelSystem, nil
 
-	// если заказ не зарегистрирован в системе
+		// если заказ не зарегистрирован в системе
 	case 204:
+		fmt.Printf("Статус 204\n")
 		return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.ASOrderNotRegistered204)
 
-	// если превышено количество запросов к сервису
+		// если превышено количество запросов к сервису
 	case 429:
+		fmt.Printf("Статус 429\n")
 		// проверка Content-Type
 		if contentType := resp.Header.Get("Content-Type"); contentType != "text/plain" {
 			return model.AccrualSystem{}, fmt.Errorf("%v: %v; требуется text/plain", customerrors.InvalidContentType400, contentType)
@@ -88,8 +99,9 @@ func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (
 			Message:    message,
 		}, fmt.Errorf("%v", customerrors.ASTooManyRequests429)
 
-	// если возникла внутренняя ошибка сервера
+		// если возникла внутренняя ошибка сервера
 	default:
+		fmt.Printf("Статус прочий: %v\n", resp.StatusCode)
 		return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.InternalServerError500)
 	}
 }
