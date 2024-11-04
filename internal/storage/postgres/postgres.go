@@ -199,7 +199,7 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 
 	rows, err := ap.db.QueryContext(ctx, `
 	SELECT
-	order_id, order_number, order_status, accruel, uploaded_at
+	order_id, order_number, order_status, accrual, uploaded_at
 	FROM orders
 	WHERE user_id = $1
 	ORDER BY uploaded_at DESC;

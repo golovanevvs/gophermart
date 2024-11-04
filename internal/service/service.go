@@ -36,9 +36,9 @@ type orderServiceStr struct {
 }
 
 type accrualSystemServiceStr struct {
-	address string
-	st      storage.AllStorageInt
-	as      accrualsystem.AccrualSystemInt
+	//address string
+	st storage.AllStorageInt
+	as accrualsystem.AccrualSystemInt
 }
 
 type ServiceStrInt struct {
@@ -62,8 +62,9 @@ func NewOrderService(st storage.AllStorageInt, accrualServiceAddress string) *or
 
 func NewAccrualSystemService(st storage.AllStorageInt, accrualServiceAddress string) *accrualSystemServiceStr {
 	return &accrualSystemServiceStr{
-		address: accrualServiceAddress,
-		st:      st,
+		//address: accrualServiceAddress,
+		st: st,
+		as: accrualsystem.NewAccrualSystem(accrualServiceAddress),
 	}
 }
 

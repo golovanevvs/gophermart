@@ -27,6 +27,7 @@ func NewAccrualSystem(address string) *accrualSystemStr {
 }
 
 func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (model.AccrualSystem, error) {
+	fmt.Printf("Запуск GetAPIOrders\n")
 	// создание экземпляра клиента
 	client := &http.Client{}
 
