@@ -66,7 +66,7 @@ func (hd *handlerStr) userRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// запись заголовков и ответа
-	w.Header().Add("Authorization", fmt.Sprint("Bearer", tokenString))
+	w.Header().Add("Authorization", fmt.Sprint("Bearer ", tokenString))
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(res))
