@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"bytes"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ type responseData struct {
 	status      int
 	size        int
 	contentType string
+	body        *bytes.Buffer
 }
 
 // структура с http.ResponseWriter и responseData
@@ -25,8 +27,10 @@ type loggingResponseWriter struct {
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	// записываем ответ, используя оригинальный http.ResponseWriter, получаем размер
 	size, err := r.ResponseWriter.Write(b)
-	//захватваем размер
+	// захватваем размер
 	r.responseData.size += size
+	// захватываем тело ответа
+	r.responseData.body.Write(b)
 
 	return size, err
 }
@@ -53,6 +57,7 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 				status:      0,
 				size:        0,
 				contentType: "",
+				body:        bytes.NewBuffer(nil),
 			}
 
 			// создаём экземпляр структуры loggingResponseWriter
@@ -80,6 +85,8 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 			resContentType := responseData.contentType
 			// размер
 			resSize := responseData.size
+			// тело
+			resBody := responseData.body.String()
 
 			// время обработки запроса
 			duration := time.Since(start)
@@ -91,6 +98,7 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 			lg.Debugf("Response status: %v", resStatus)
 			lg.Debugf("Response Content-Type: %v", resContentType)
 			lg.Debugf("Response size: %v", resSize)
+			lg.Debugf("Response body: %v", resBody)
 			lg.Debugf("Duration: %v", duration)
 		})
 	}
