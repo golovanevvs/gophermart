@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -24,11 +25,12 @@ func (hd *handlerStr) authByJWT(next http.Handler) http.Handler {
 		}
 
 		headerSplit := strings.Split(header, " ")
+		fmt.Println(headerSplit)
 
-		if len(headerSplit) != 2 || headerSplit[0] != "Bearer" {
-			http.Error(w, "некорректный заголовок авторизации", http.StatusUnauthorized)
-			return
-		}
+		// if len(headerSplit) != 2 || headerSplit[0] != "Bearer" {
+		// 	http.Error(w, "некорректный заголовок авторизации", http.StatusUnauthorized)
+		// 	return
+		// }
 
 		if len(headerSplit[1]) == 0 {
 			http.Error(w, "заголовок авторизации не содержит токен", http.StatusUnauthorized)
