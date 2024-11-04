@@ -199,7 +199,7 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 
 	rows, err := ap.db.QueryContext(ctx, `
 	SELECT
-	order_id, order_number, order_status, uploaded_at
+	order_id, order_number, order_status, accruel, uploaded_at
 	FROM orders
 	WHERE user_id = $1
 	ORDER BY uploaded_at DESC;
@@ -213,7 +213,7 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 
 	for rows.Next() {
 		var order model.Order
-		err = rows.Scan(&order.ID, &order.Number, &order.Status, &order.UploadedAt)
+		err = rows.Scan(&order.ID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -295,13 +295,36 @@ func (ap *allPostgresStr) LoadWithdrawalsByUserID(ctx context.Context, userID in
 	return withdrawals, nil
 }
 
-// TODO: доделать запрос
-func (ap *allPostgresStr) SaveAccrualStatusByOrderNumber(ctx context.Context, accrualSystem model.AccrualSystem) error {
+func (ap *allPostgresStr) SaveAccrualStatusByOrderNumber(ctx context.Context, orderNumber int, status string) error {
 	_, err := ap.db.ExecContext(ctx, `
-	UPDATE orders SET
-		order_status = $1
+	UPDATE orders
+	SET	order_status = $1
 	WHERE order_number = $2;
-	`, accrualSystem.Status, accrualSystem.OrderNumber)
+	`, status, orderNumber)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, accrualSystem model.AccrualSystem) error {
+	_, err := ap.db.ExecContext(ctx, `
+	UPDATE orders
+	SET order_status = $1, accrual = $2
+	WHERE order_number = $3;
+	`, accrualSystem.Status, accrualSystem.Accrual, accrualSystem.OrderNumber)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ap *allPostgresStr) SaveNewPoints(ctx context.Context, userID int, newPoints int) error {
+	_, err := ap.db.ExecContext(ctx, `
+	UPDATE balance
+	SET current_points = $1,
+	WHERE user_id = $2;
+	`, newPoints, userID)
 	if err != nil {
 		return err
 	}

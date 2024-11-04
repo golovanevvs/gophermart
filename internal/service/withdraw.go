@@ -31,7 +31,11 @@ func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrd
 		return fmt.Errorf("%v", customerrors.NotEnoughPoints402)
 	}
 
-	// TODO: добавить списание баллов со счёта пользователя
+	newPoints := currentPoints - sum
+	err = os.st.SaveNewPoints(ctx, userID, newPoints)
+	if err != nil {
+		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
+	}
 
 	return nil
 }

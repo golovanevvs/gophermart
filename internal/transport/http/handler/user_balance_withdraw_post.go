@@ -11,8 +11,6 @@ import (
 )
 
 func (hd *handlerStr) withDraw(w http.ResponseWriter, r *http.Request) {
-	// TODO: реализовать withDraw
-
 	// проверка Content-Type
 	contentType := r.Header.Get("Content-Type")
 	switch contentType {
@@ -53,7 +51,5 @@ func (hd *handlerStr) withDraw(w http.ResponseWriter, r *http.Request) {
 
 	// запись заголовков и ответа
 	w.WriteHeader(http.StatusOK)
-
-	// TODO: сделать нормальный ответ
-	w.Write([]byte("withDraw"))
+	w.Write([]byte("успешная обработка запроса"))
 }

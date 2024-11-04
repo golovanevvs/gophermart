@@ -14,6 +14,7 @@ func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNum
 		return 0, fmt.Errorf("%v: %v", customerrors.InvalidOrderNumber422, err.Error())
 	}
 
+	// сохранение в БД, обработка ошибок
 	orderID, err := os.st.SaveOrderNumberByUserID(ctx, userID, orderNumber)
 	if err != nil {
 		// если номер заказа уже есть в БД
@@ -35,6 +36,14 @@ func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNum
 		// если возникла другая ошибка
 		return 0, fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 	}
+
+	go func(userID int, orderNumber int) {
+		err = os.as.GetOrderFromAS(userID, orderNumber)
+		if err != nil {
+			//TODO: добавить логгирование
+			fmt.Printf("Ошибка в AS: %v", err.Error())
+		}
+	}(userID, orderNumber)
 
 	return orderID, nil
 }

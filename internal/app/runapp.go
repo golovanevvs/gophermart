@@ -11,7 +11,7 @@ import (
 	"github.com/golovanevvs/gophermart/internal/service"
 	"github.com/golovanevvs/gophermart/internal/storage"
 	"github.com/golovanevvs/gophermart/internal/storage/postgres"
-	"github.com/golovanevvs/gophermart/internal/transport/http/accrualsystem"
+
 	"github.com/golovanevvs/gophermart/internal/transport/http/handler"
 
 	"github.com/sirupsen/logrus"
@@ -31,12 +31,10 @@ func RunApp() {
 		lg.Fatalf("Ошибка инициализации базы данных: %v", err.Error())
 	}
 
-	// инициализация системы расчёта начислений баллов
-	as := accrualsystem.NewAccrualSystem(cfg.AccrualSystemAddress)
 	// инициализация хранилища
 	st := storage.NewStorage(db)
 	// инициализация сервиса
-	sv := service.NewService(st, as)
+	sv := service.NewService(st, cfg.AccrualSystemAddress)
 	// инициализация хендлера
 	hd := handler.NewHandler(sv)
 	// инициализация сервера

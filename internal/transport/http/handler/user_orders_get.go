@@ -10,9 +10,6 @@ import (
 )
 
 func (hd *handlerStr) getOrders(w http.ResponseWriter, r *http.Request) {
-	// TODO: добавить accrual
-	// TODO: добавить обновление статуса
-
 	// получение userID
 	userID := r.Context().Value(UserIDContextKey).(int)
 

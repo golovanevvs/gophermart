@@ -23,7 +23,7 @@ type OrderServiceInt interface {
 }
 
 type AccrualSystemServiceInt interface {
-	GetOrderFromASByOrderNumber(ctx context.Context, orderNumber int) (accrualSystem model.AccrualSystem, err error)
+	GetOrderFromAS(userID int, orderNumber int) error
 }
 
 type authServiceStr struct {
@@ -32,11 +32,13 @@ type authServiceStr struct {
 
 type orderServiceStr struct {
 	st storage.AllStorageInt
+	as AccrualSystemServiceInt
 }
 
 type accrualSystemServiceStr struct {
-	st storage.AllStorageInt
-	as accrualsystem.AccrualSystemInt
+	address string
+	st      storage.AllStorageInt
+	as      accrualsystem.AccrualSystemInt
 }
 
 type ServiceStrInt struct {
@@ -51,23 +53,23 @@ func NewAuthService(st storage.AllStorageInt) *authServiceStr {
 	}
 }
 
-func NewOrderService(st storage.AllStorageInt) *orderServiceStr {
+func NewOrderService(st storage.AllStorageInt, accrualServiceAddress string) *orderServiceStr {
 	return &orderServiceStr{
 		st: st,
+		as: NewAccrualSystemService(st, accrualServiceAddress),
 	}
 }
 
-func NewAccrualSystemService(st storage.AllStorageInt, as accrualsystem.AccrualSystemInt) *accrualSystemServiceStr {
+func NewAccrualSystemService(st storage.AllStorageInt, accrualServiceAddress string) *accrualSystemServiceStr {
 	return &accrualSystemServiceStr{
-		st: st,
-		as: as,
+		address: accrualServiceAddress,
+		st:      st,
 	}
 }
 
-func NewService(st *storage.StorageStrInt, as accrualsystem.AccrualSystemInt) *ServiceStrInt {
+func NewService(st *storage.StorageStrInt, accrualServiceAddress string) *ServiceStrInt {
 	return &ServiceStrInt{
-		AuthServiceInt:          NewAuthService(st),
-		OrderServiceInt:         NewOrderService(st),
-		AccrualSystemServiceInt: NewAccrualSystemService(st, as),
+		AuthServiceInt:  NewAuthService(st),
+		OrderServiceInt: NewOrderService(st, accrualServiceAddress),
 	}
 }
