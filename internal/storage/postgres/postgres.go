@@ -92,6 +92,9 @@ func createTables(db *sqlx.DB) error {
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
 	`)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
