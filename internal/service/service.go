@@ -23,7 +23,9 @@ type OrderServiceInt interface {
 }
 
 type AccrualSystemServiceInt interface {
-	GetOrderFromAS(userID int, orderNumber int) error
+	ProcAccrual(userID int, orderNumber int)
+	GetAccrual(ctx context.Context, userID int, orderNumber int) (int, error)
+	UpdateBalance(ctx context.Context, userID int, accrual int) error
 }
 
 type authServiceStr struct {

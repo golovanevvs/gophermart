@@ -37,13 +37,7 @@ func (os *orderServiceStr) UploadOrder(ctx context.Context, userID int, orderNum
 		return 0, fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 	}
 
-	go func(userID int, orderNumber int) {
-		err = os.as.GetOrderFromAS(userID, orderNumber)
-		if err != nil {
-			//TODO: добавить логгирование
-			fmt.Printf("Ошибка в AS: %v", err.Error())
-		}
-	}(userID, orderNumber)
+	go os.as.ProcAccrual(userID, orderNumber)
 
 	return orderID, nil
 }

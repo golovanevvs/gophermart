@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 	"github.com/golovanevvs/gophermart/internal/model"
@@ -67,16 +68,16 @@ func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (
 
 		return accruelSystem, nil
 
-		// если заказ не зарегистрирован в системе
+	// если заказ не зарегистрирован в системе
 	case 204:
 		fmt.Printf("Статус 204\n")
 		return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.ASOrderNotRegistered204)
 
-		// если превышено количество запросов к сервису
+	// если превышено количество запросов к сервису
 	case 429:
 		fmt.Printf("Статус 429\n")
 		// проверка Content-Type
-		if contentType := resp.Header.Get("Content-Type"); contentType != "text/plain" {
+		if contentType := resp.Header.Get("Content-Type"); !strings.HasPrefix(contentType, "text/plain") {
 			return model.AccrualSystem{}, fmt.Errorf("%v: %v; требуется text/plain", customerrors.InvalidContentType400, contentType)
 		}
 
@@ -99,7 +100,7 @@ func (as *accrualSystemStr) GetAPIOrders(ctx context.Context, orderNumber int) (
 			Message:    message,
 		}, fmt.Errorf("%v", customerrors.ASTooManyRequests429)
 
-		// если возникла внутренняя ошибка сервера
+	// если возникла внутренняя ошибка сервера
 	default:
 		fmt.Printf("Статус прочий: %v\n", resp.StatusCode)
 		return model.AccrualSystem{}, fmt.Errorf("%v", customerrors.InternalServerError500)

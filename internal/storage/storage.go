@@ -18,7 +18,7 @@ type AllStorageInt interface {
 	LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error)
 	LoadWithdrawalsByUserID(ctx context.Context, userID int) ([]model.Withdrawals, error)
 	SaveAccrualStatusByOrderNumber(ctx context.Context, orderNumber int, status string) error
-	SaveAccrualByOrderNumber(ctx context.Context, accrualSystem model.AccrualSystem) error
+	SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual int) error
 	SaveNewPoints(ctx context.Context, userID int, newPoints int) error
 }
 

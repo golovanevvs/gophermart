@@ -72,7 +72,7 @@ func createTables(db *sqlx.DB) error {
 		order_number BIGINT UNIQUE,
 		order_status VARCHAR(250) NOT NULL,
 		uploaded_at TIMESTAMPTZ,
-		accrual INT,
+		accrual INT DEFAULT 0,
 		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
@@ -295,12 +295,12 @@ func (ap *allPostgresStr) SaveAccrualStatusByOrderNumber(ctx context.Context, or
 	return nil
 }
 
-func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, accrualSystem model.AccrualSystem) error {
+func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual int) error {
 	_, err := ap.db.ExecContext(ctx, `
 	UPDATE orders
-	SET order_status = $1, accrual = $2
-	WHERE order_number = $3;
-	`, accrualSystem.Status, accrualSystem.Accrual, accrualSystem.OrderNumber)
+	SET accrual = $1
+	WHERE order_number = $2;
+	`, accrual, orderNumber)
 	if err != nil {
 		return err
 	}
