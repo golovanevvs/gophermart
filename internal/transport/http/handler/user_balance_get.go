@@ -27,6 +27,7 @@ func (hd *handlerStr) getBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// запись заголовков и ответа
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
