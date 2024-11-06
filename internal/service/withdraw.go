@@ -33,6 +33,9 @@ func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrd
 
 	// загрузка withdrawn
 	currentWithdrawn, err := os.st.LoadWithdrawn(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
+	}
 
 	// обновление баланса
 	newPoints := currentPoints - sum
