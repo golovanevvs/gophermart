@@ -31,8 +31,18 @@ func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrd
 		return fmt.Errorf("%v", customerrors.NotEnoughPoints402)
 	}
 
+	// загрузка withdrawn
+	currentWithdrawn, err := os.st.LoadWithdrawn(ctx, userID)
+
+	// обновление баланса
 	newPoints := currentPoints - sum
 	err = os.st.SaveNewPoints(ctx, userID, newPoints)
+	if err != nil {
+		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
+	}
+
+	newWithdrawn := currentWithdrawn + sum
+	err = os.st.SaveNewWithdrawn(ctx, userID, newWithdrawn)
 	if err != nil {
 		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 	}

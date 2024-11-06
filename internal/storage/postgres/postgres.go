@@ -324,3 +324,31 @@ func (ap *allPostgresStr) SaveNewPoints(ctx context.Context, userID int, newPoin
 	}
 	return nil
 }
+
+func (ap *allPostgresStr) LoadWithdrawn(ctx context.Context, userID int) (float64, error) {
+	row := ap.db.QueryRowContext(ctx, `
+	SELECT withdrawn FROM account
+	WHERE user_id = $1;
+	`, userID)
+
+	var withdrawn float64
+
+	err := row.Scan(&withdrawn)
+	if err != nil {
+		return 0, err
+	}
+
+	return withdrawn, nil
+}
+
+func (ap *allPostgresStr) SaveNewWithdrawn(ctx context.Context, userID int, withdrawn float64) error {
+	_, err := ap.db.ExecContext(ctx, `
+	UPDATE account
+	SET withdrawn = $1
+	WHERE user_id = $2;
+	`, withdrawn, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

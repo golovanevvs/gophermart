@@ -20,6 +20,8 @@ type AllStorageInt interface {
 	SaveAccrualStatusByOrderNumber(ctx context.Context, orderNumber int, status string) error
 	SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual float64) error
 	SaveNewPoints(ctx context.Context, userID int, newPoints float64) error
+	LoadWithdrawn(ctx context.Context, userID int) (float64, error)
+	SaveNewWithdrawn(ctx context.Context, userID int, withdrawn float64) error
 }
 
 type StorageStrInt struct {
