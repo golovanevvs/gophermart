@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -114,7 +115,8 @@ func (as *accrualSystemServiceStr) UpdateBalance(ctx context.Context, userID int
 		fmt.Printf("Ошибка при получении текущего баланса из БД: %v", err.Error())
 		return err
 	}
-	newPoints := currentPoints + accrual
+	accrualRound := math.Round(accrual*100) / 100
+	newPoints := currentPoints + accrualRound
 	fmt.Printf("Сохранение нового баланса в БД: %v...\n", newPoints)
 	err = as.st.SaveNewPoints(ctx, userID, newPoints)
 	fmt.Printf("Сохранение нового баланса в БД завершено: %v\n", newPoints)
