@@ -8,7 +8,7 @@ import (
 	"github.com/golovanevvs/gophermart/internal/customerrors"
 )
 
-func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum int) error {
+func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum float64) error {
 	// преобразование номера заказа в число
 	withdrawOrderNumberInt, err := strconv.Atoi(withdrawOrderNumber)
 	if err != nil {

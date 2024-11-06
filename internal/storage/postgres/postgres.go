@@ -57,8 +57,8 @@ func createTables(db *sqlx.DB) error {
 		user_id SERIAL PRIMARY KEY,
 		login VARCHAR(250) UNIQUE NOT NULL,
 		password_hash VARCHAR(250) NOT NULL,
-		current_points INT DEFAULT 0,
-		withdrawn INT DEFAULT 0
+		current_points FLOAT DEFAULT 0,
+		withdrawn FLOAT DEFAULT 0
 	);
 	`)
 	if err != nil {
@@ -72,7 +72,7 @@ func createTables(db *sqlx.DB) error {
 		order_number BIGINT UNIQUE,
 		order_status VARCHAR(250) NOT NULL,
 		uploaded_at TIMESTAMPTZ,
-		accrual INT DEFAULT 0,
+		accrual FLOAT DEFAULT 0,
 		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
@@ -86,7 +86,7 @@ func createTables(db *sqlx.DB) error {
 	CREATE TABLE IF NOT EXISTS withdrawals (
 		withdrawals_id SERIAL PRIMARY KEY,
 		new_order INT,
-		sum INT,
+		sum FLOAT,
 		processed_at TIMESTAPTZ,
 		user_id INT,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
@@ -225,7 +225,7 @@ func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (
 	WHERE user_id=$1;
 	`, userID)
 
-	var currentPoints, withdrawn int
+	var currentPoints, withdrawn float64
 
 	err := row.Scan(&currentPoints, &withdrawn)
 	if err != nil {
@@ -240,13 +240,13 @@ func (ap *allPostgresStr) LoadBalanceByUserID(ctx context.Context, userID int) (
 	return balance, nil
 }
 
-func (ap *allPostgresStr) LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error) {
+func (ap *allPostgresStr) LoadCurrentPointsByUserID(ctx context.Context, userID int) (float64, error) {
 	row := ap.db.QueryRowContext(ctx, `
 	SELECT current_points FROM account
 	WHERE user_id=$1;
 	`, userID)
 
-	var currentPoints int
+	var currentPoints float64
 
 	err := row.Scan(&currentPoints)
 	if err != nil {
@@ -298,7 +298,7 @@ func (ap *allPostgresStr) SaveAccrualStatusByOrderNumber(ctx context.Context, or
 	return nil
 }
 
-func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual int) error {
+func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual float64) error {
 	_, err := ap.db.ExecContext(ctx, `
 	UPDATE orders
 	SET accrual = $1
@@ -310,7 +310,7 @@ func (ap *allPostgresStr) SaveAccrualByOrderNumber(ctx context.Context, orderNum
 	return nil
 }
 
-func (ap *allPostgresStr) SaveNewPoints(ctx context.Context, userID int, newPoints int) error {
+func (ap *allPostgresStr) SaveNewPoints(ctx context.Context, userID int, newPoints float64) error {
 	_, err := ap.db.ExecContext(ctx, `
 	UPDATE account
 	SET current_points = $1

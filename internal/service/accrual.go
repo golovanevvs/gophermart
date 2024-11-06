@@ -28,7 +28,7 @@ func (as *accrualSystemServiceStr) ProcAccrual(userID int, orderNumber int) {
 	}
 }
 
-func (as *accrualSystemServiceStr) GetAccrual(ctx context.Context, userID int, orderNumber int) (int, error) {
+func (as *accrualSystemServiceStr) GetAccrual(ctx context.Context, userID int, orderNumber int) (float64, error) {
 	var accrualSystem model.AccrualSystem
 	var err error
 	var interval time.Duration
@@ -106,7 +106,7 @@ func (as *accrualSystemServiceStr) GetAccrual(ctx context.Context, userID int, o
 	}
 }
 
-func (as *accrualSystemServiceStr) UpdateBalance(ctx context.Context, userID int, accrual int) error {
+func (as *accrualSystemServiceStr) UpdateBalance(ctx context.Context, userID int, accrual float64) error {
 	fmt.Printf("Получение текущего баланса из БД userID: %v...\n", userID)
 	currentPoints, err := as.st.LoadCurrentPointsByUserID(ctx, userID)
 	fmt.Printf("Получение текущего баланса из БД userID завершено: %v, баланс: %v\n", userID, currentPoints)

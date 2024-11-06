@@ -15,11 +15,11 @@ type AllStorageInt interface {
 	LoadUserIDByOrderNumber(ctx context.Context, orderNumber int) (int, error)
 	LoadOrderByUserID(ctx context.Context, userID int) ([]model.Order, error)
 	LoadBalanceByUserID(ctx context.Context, userID int) (model.Balance, error)
-	LoadCurrentPointsByUserID(ctx context.Context, userID int) (int, error)
+	LoadCurrentPointsByUserID(ctx context.Context, userID int) (float64, error)
 	LoadWithdrawalsByUserID(ctx context.Context, userID int) ([]model.Withdrawals, error)
 	SaveAccrualStatusByOrderNumber(ctx context.Context, orderNumber int, status string) error
-	SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual int) error
-	SaveNewPoints(ctx context.Context, userID int, newPoints int) error
+	SaveAccrualByOrderNumber(ctx context.Context, orderNumber int, accrual float64) error
+	SaveNewPoints(ctx context.Context, userID int, newPoints float64) error
 }
 
 type StorageStrInt struct {

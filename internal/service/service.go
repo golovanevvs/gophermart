@@ -18,14 +18,14 @@ type AuthServiceInt interface {
 type OrderServiceInt interface {
 	UploadOrder(ctx context.Context, userID int, orderNumber int) (int, error)
 	GetOrders(ctx context.Context, userID int) ([]model.Order, error)
-	Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum int) error
+	Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum float64) error
 	Withdrawals(ctx context.Context, userID int) ([]model.Withdrawals, error)
 }
 
 type AccrualSystemServiceInt interface {
 	ProcAccrual(userID int, orderNumber int)
-	GetAccrual(ctx context.Context, userID int, orderNumber int) (int, error)
-	UpdateBalance(ctx context.Context, userID int, accrual int) error
+	GetAccrual(ctx context.Context, userID int, orderNumber int) (float64, error)
+	UpdateBalance(ctx context.Context, userID int, accrual float64) error
 }
 
 type authServiceStr struct {
