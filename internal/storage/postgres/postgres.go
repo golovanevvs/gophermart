@@ -289,13 +289,13 @@ func (ap *allPostgresStr) LoadWithdrawalsByUserID(ctx context.Context, userID in
 	return withdrawals, nil
 }
 
-func (ap *allPostgresStr) SaveWithdrawals(ctx context.Context, withdrawls model.Withdrawals) error {
+func (ap *allPostgresStr) SaveWithdrawals(ctx context.Context, userID int, withdrawls model.Withdrawals) error {
 	_, err := ap.db.ExecContext(ctx, `
 	INSERT INTO withdrawals
-		(new_order, sum, processed_at)
+		(new_order, sum, processed_at, user_id)
 	VALUES
-		($1, $2, $3);
-	`, withdrawls.NewOrderNumber, withdrawls.Sum, withdrawls.ProcessedAt)
+		($1, $2, $3, $4);
+	`, withdrawls.NewOrderNumber, withdrawls.Sum, withdrawls.ProcessedAt, userID)
 	if err != nil {
 		return err
 	}

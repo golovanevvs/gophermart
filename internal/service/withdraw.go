@@ -58,7 +58,7 @@ func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrd
 		Sum:            sum,
 		ProcessedAt:    time.Now(),
 	}
-	err = os.st.SaveWithdrawals(ctx, newWithdrawals)
+	err = os.st.SaveWithdrawals(ctx, userID, newWithdrawals)
 	if err != nil {
 		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 	}
