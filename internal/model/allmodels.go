@@ -10,11 +10,12 @@ type User struct {
 }
 
 type Order struct {
-	ID         int       `json:"-"`
-	Number     int       `json:"number"`
-	Status     string    `json:"status"`
-	Accrual    float64   `json:"accrual,omitempty"`
-	UploadedAt time.Time `json:"uploaded_at"`
+	ID           int       `json:"-"`
+	Number       int       `json:"-"`
+	NumberString string    `json:"number"`
+	Status       string    `json:"status"`
+	Accrual      float64   `json:"accrual,omitempty"`
+	UploadedAt   time.Time `json:"uploaded_at"`
 }
 
 type Balance struct {

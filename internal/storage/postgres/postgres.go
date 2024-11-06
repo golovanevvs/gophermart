@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/golovanevvs/gophermart/internal/model"
@@ -208,6 +209,8 @@ func (ap *allPostgresStr) LoadOrderByUserID(ctx context.Context, userID int) ([]
 		if err != nil {
 			return nil, err
 		}
+
+		order.NumberString = strconv.Itoa(order.Number)
 
 		orders = append(orders, order)
 	}
