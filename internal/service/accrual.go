@@ -15,14 +15,12 @@ func (as *accrualSystemServiceStr) ProcAccrual(userID int, orderNumber int) {
 	ctx := context.Background()
 	accrual, err := as.GetAccrual(ctx, userID, orderNumber)
 	if err != nil {
-		// TODO: добавить логгирование
 		fmt.Printf("%v: %v", customerrors.ASError, err.Error())
 		return
 	}
 	if accrual > 0 {
 		err := as.UpdateBalance(ctx, userID, accrual)
 		if err != nil {
-			// TODO: добавить логгирование
 			fmt.Printf("%v: %v", customerrors.ASError, err.Error())
 			return
 		}
@@ -108,20 +106,14 @@ func (as *accrualSystemServiceStr) GetAccrual(ctx context.Context, userID int, o
 }
 
 func (as *accrualSystemServiceStr) UpdateBalance(ctx context.Context, userID int, accrual float64) error {
-	fmt.Printf("Получение текущего баланса из БД userID: %v...\n", userID)
 	currentPoints, err := as.st.LoadCurrentPointsByUserID(ctx, userID)
-	fmt.Printf("Получение текущего баланса из БД userID завершено: %v, баланс: %v\n", userID, currentPoints)
 	if err != nil {
-		fmt.Printf("Ошибка при получении текущего баланса из БД: %v", err.Error())
 		return err
 	}
 	accrualRound := math.Round(accrual*100) / 100
 	newPoints := currentPoints + accrualRound
-	fmt.Printf("Сохранение нового баланса в БД: %v...\n", newPoints)
 	err = as.st.SaveNewPoints(ctx, userID, newPoints)
-	fmt.Printf("Сохранение нового баланса в БД завершено: %v\n", newPoints)
 	if err != nil {
-		fmt.Printf("Ошибка при сохранении нового баланса в БД: %v", err.Error())
 		return err
 	}
 	return nil
