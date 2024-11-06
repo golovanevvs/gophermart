@@ -57,8 +57,8 @@ func createTables(db *sqlx.DB) error {
 		user_id SERIAL PRIMARY KEY,
 		login VARCHAR(250) UNIQUE NOT NULL,
 		password_hash VARCHAR(250) NOT NULL,
-		current_points FLOAT DEFAULT 0,
-		withdrawn FLOAT DEFAULT 0
+		current_points DOUBLE PRECISION DEFAULT 0,
+		withdrawn DOUBLE PRECISION DEFAULT 0
 	);
 	`)
 	if err != nil {
@@ -71,8 +71,8 @@ func createTables(db *sqlx.DB) error {
 		order_id SERIAL PRIMARY KEY,
 		order_number BIGINT UNIQUE,
 		order_status VARCHAR(250) NOT NULL,
-		uploaded_at TIMESTAMPTZ,
-		accrual FLOAT DEFAULT 0,
+		uploaded_at TIMESTAMP WITH TIME ZONE,
+		accrual DOUBLE PRECISION DEFAULT 0,
 		user_id INT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
@@ -86,8 +86,8 @@ func createTables(db *sqlx.DB) error {
 	CREATE TABLE IF NOT EXISTS withdrawals (
 		withdrawals_id SERIAL PRIMARY KEY,
 		new_order INT,
-		sum FLOAT,
-		processed_at TIMESTAPTZ,
+		sum DOUBLE PRECISION,
+		processed_at TIMESTAMP WITH TIME ZONE,
 		user_id INT,
 		FOREIGN KEY (user_id) REFERENCES account(user_id) ON DELETE CASCADE
 	);
