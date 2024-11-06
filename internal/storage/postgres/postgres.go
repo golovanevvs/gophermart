@@ -86,7 +86,7 @@ func createTables(db *sqlx.DB) error {
 	_, err = db.ExecContext(ctx, `
 	CREATE TABLE IF NOT EXISTS withdrawals (
 		withdrawals_id SERIAL PRIMARY KEY,
-		new_order INT,
+		new_order VARCHAR(250),
 		sum DOUBLE PRECISION,
 		processed_at TIMESTAMP WITH TIME ZONE,
 		user_id INT,
