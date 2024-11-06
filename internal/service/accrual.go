@@ -49,10 +49,10 @@ func (as *accrualSystemServiceStr) GetAccrual(ctx context.Context, userID int, o
 				fmt.Printf("%v: %v", customerrors.ASError, err.Error())
 				return 0, err
 			case strings.Contains(err.Error(), customerrors.ASOrderNotRegistered204):
-				// поменять статус заказа - INVALID
+				// статус заказа не менять
+				// отобразить ошибку в логах
 				// прервать
 				fmt.Printf("%v: %v", customerrors.ASError, err.Error())
-				as.st.SaveAccrualStatusByOrderNumber(ctx, orderNumber, "INVALID")
 				return 0, err
 			case strings.Contains(err.Error(), customerrors.AtoiError500):
 				// статус заказа не менять
