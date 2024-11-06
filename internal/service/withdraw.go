@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/golovanevvs/gophermart/internal/customerrors"
+	"github.com/golovanevvs/gophermart/internal/model"
 )
 
 func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrderNumber string, sum float64) error {
@@ -46,6 +48,17 @@ func (os *orderServiceStr) Withdraw(ctx context.Context, userID int, withdrawOrd
 
 	newWithdrawn := currentWithdrawn + sum
 	err = os.st.SaveNewWithdrawn(ctx, userID, newWithdrawn)
+	if err != nil {
+		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
+	}
+
+	// обновление withdrawals
+	newWithdrawals := model.Withdrawals{
+		NewOrderNumber: withdrawOrderNumber,
+		Sum:            sum,
+		ProcessedAt:    time.Now(),
+	}
+	err = os.st.SaveWithdrawals(ctx, newWithdrawals)
 	if err != nil {
 		return fmt.Errorf("%v: %v", customerrors.DBError500, err.Error())
 	}
