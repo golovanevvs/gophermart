@@ -92,6 +92,7 @@ func WithLogging(lg *logrus.Logger) func(h http.Handler) http.Handler {
 			duration := time.Since(start)
 
 			// отправляем сведения в логгер
+			lg.Debugf("---------------------------------------------------------------")
 			lg.Debugf("Request method: %v", reqMethod)
 			lg.Debugf("Request URI: %v", reqURI)
 			lg.Debugf("Request Content-Type: %v", reqContentType)
