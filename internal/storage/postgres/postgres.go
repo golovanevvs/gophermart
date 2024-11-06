@@ -295,7 +295,7 @@ func (ap *allPostgresStr) SaveWithdrawals(ctx context.Context, withdrawls model.
 		(new_order, sum, processed_at)
 	VALUES
 		($1, $2, $3);
-	`)
+	`, withdrawls.NewOrderNumber, withdrawls.Sum, withdrawls.ProcessedAt)
 	if err != nil {
 		return err
 	}
