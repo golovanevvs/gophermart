@@ -1,3 +1,5 @@
 Компиляция и запуск:
 
 cd /c/Golovanev/Dev/Projects/YaPracticum/gophermart/cmd/gophermart && go build && start gophermart
+
+cd /c/Golovanev/Dev/Projects/YaPracticum/gophermart/cmd/accrual && start accrual_windows_amd64

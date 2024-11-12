@@ -1,33 +1,28 @@
 package customerrors
 
-import "errors"
-
-type customErr string
-
 const (
-	Err400                 customErr = "неверный формат запроса"
-	Err401                 customErr = "неверная пара логин/пароль"
-	BusyLogin409           customErr = "логин уже занят"
-	InternalServerError500 customErr = "внутренняя ошибка сервера"
+	OrderAlredyUploadedThisUser200  = "номер заказа уже был загружен этим пользователем"
+	EmptyOrder204                   = "нет данных для ответа"
+	EmptyWithdrawals204             = "нет ни одного списания"
+	ASOrderNotRegistered204         = "заказ не зарегистрирован в системе расчёта"
+	InvalidRequest400               = "неверный формат запроса"
+	InvalidContentType400           = "неверный Content-Type"
+	DBInvalidLoginPassword401       = "неверная пара логин/пароль"
+	JWTWrongSingingMethod401        = "неверный метод подписи"
+	JWTParseError401                = "ошибка при чтении JWT"
+	JWTInvalidToken401              = "невалидный токен"
+	NotEnoughPoints402              = "на счету недостаточно средств"
+	OrderAlredyUploadedOtherUser409 = "номер заказа уже был загружен другим пользователем"
+	DBBusyLogin409                  = "ошибка БД: логин уже занят"
+	InvalidOrderNumber422           = "Неверный формат номера заказа"
+	InvalidOrderNumberNotInt422     = "Неверный формат номера заказа: не соответствует типу int"
+	ASTooManyRequests429            = "превышено количество запросов к сервису"
+	DBError500                      = "ошибка БД"
+	InternalServerError500          = "внутренняя ошибка сервера"
+	DecodeJSONError500              = "ошибка десериализации JSON"
+	EncodeJSONError500              = "ошибка сериализации JSON"
+	ResponseBodyError500            = "ошибка при чтении тела ответа"
+	AtoiError500                    = "ошибка преобразования строки в число"
+	ClientError500                  = "ошибка при отправке запроса"
+	ASError                         = "сервис по взаимодействию с системой расчёта начислений баллов"
 )
-
-type CustomError struct {
-	IsError   bool
-	Err       error
-	CustomErr error
-}
-
-func New(err error, customErr customErr) CustomError {
-	var customError CustomError
-
-	customError.IsError = false
-
-	if err != nil || len(customErr) > 0 {
-		customError.IsError = true
-	}
-
-	customError.Err = err
-	customError.CustomErr = errors.New(string(customErr))
-
-	return customError
-}

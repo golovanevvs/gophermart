@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -21,11 +23,16 @@ type claims struct {
 }
 
 // BuildJWTString создаёт токен и возвращает его в виде строки
-func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password string) (string, customerrors.CustomError) {
+func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password string) (string, error) {
 	// получение пользователя из БД
-	user, err := as.st.GetUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
+	user, err := as.st.LoadUserByLoginPasswordHash(ctx, login, genPasswordHash(password))
 	if err != nil {
-		return "", customerrors.New(err, customerrors.InternalServerError500)
+		// если неверная пара логин/пароль
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return "", fmt.Errorf("%v: %v", customerrors.DBInvalidLoginPassword401, err.Error())
+		}
+		// если другая ошибка
+		return "", fmt.Errorf("%v: %v", customerrors.InternalServerError500, err.Error())
 	}
 
 	// создание токена
@@ -33,15 +40,15 @@ func (as *authServiceStr) BuildJWTString(ctx context.Context, login, password st
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 		},
-		UserID: user.UserID,
+		UserID: user.ID,
 	})
 
 	// создание строки токена
 	tokenString, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
-		return "", customerrors.New(err, customerrors.InternalServerError500)
+		return "", fmt.Errorf("%v: %v", customerrors.InternalServerError500, err.Error())
 	}
-	return tokenString, customerrors.New(nil, "")
+	return tokenString, nil
 }
 
 // GetUserIDFromJWT возвращает userID из JWT
@@ -56,12 +63,12 @@ func (as *authServiceStr) GetUserIDFromJWT(tokenString string) (int, error) {
 		return []byte(SecretKey), nil
 	})
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("%v: %v", customerrors.JWTParseError401, err.Error())
 	}
 
 	// валидация токена
 	if !token.Valid {
-		return -1, errors.New("невалидный токен")
+		return -1, fmt.Errorf("%v", customerrors.JWTInvalidToken401)
 	}
 
 	return claims.UserID, nil

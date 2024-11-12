@@ -11,9 +11,9 @@ import (
 	"github.com/golovanevvs/gophermart/internal/service"
 	"github.com/golovanevvs/gophermart/internal/storage"
 	"github.com/golovanevvs/gophermart/internal/storage/postgres"
+
 	"github.com/golovanevvs/gophermart/internal/transport/http/handler"
 
-	//_ "github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +34,7 @@ func RunApp() {
 	// инициализация хранилища
 	st := storage.NewStorage(db)
 	// инициализация сервиса
-	sv := service.NewService(st)
+	sv := service.NewService(st, cfg.AccrualSystemAddress)
 	// инициализация хендлера
 	hd := handler.NewHandler(sv)
 	// инициализация сервера
